@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fairway Social • South Boston</title>
+    <style>
+        :root {
+            --bg: #f8f5f0;
+            --fg: #1a2f1a;
+            --accent: #2e5a2e;
+            --card: #ffffff;
+            --border: #d4c9b8;
+            --muted: #5c6b5c;
+        }
+        .dark {
+            --bg: #111811;
+            --fg: #e8e4d9;
+            --accent: #4a7c4a;
+            --card: #1c241c;
+            --border: #3a463a;
+            --muted: #8a958a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            line-height: 1.6;
+            transition: background 0.3s, color 0.3s;
+        }
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+        }
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: var(--fg);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--accent); }
+        .dark-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--fg);
+            padding: 8px 14px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .dark-toggle:hover { background: var(--accent); color: white; border-color: var(--accent); }
+        
+        .hero {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 24px 80px;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 3.5rem;
+            line-height: 1.05;
+            margin-bottom: 16px;
+            letter-spacing: -2px;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--muted);
+            max-width: 520px;
+            margin: 0 auto 40px;
+        }
+        .cta-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 16px 42px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(46, 90, 46, 0.25);
+        }
+        
+        section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 32px;
+            text-align: center;
+            letter-spacing: -0.5px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+        }
+        .feature {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px 24px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .feature:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.06);
+        }
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent);
+            color: white;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        .pricing-table th, .pricing-table td {
+            padding: 20px 24px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .pricing-table th {
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+        }
+        .pricing-table tr:last-child td { border-bottom: none; }
+        
+        .form-container {
+            max-width: 520px;
+            margin: 0 auto;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: var(--bg);
+            color: var(--fg);
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .success-state {
+            text-align: center;
+            padding: 40px 20px;
+            display: none;
+        }
+        .success-state.active { display: block; }
+        .form-container.form-hidden { display: none; }
+        
+        .testimonials {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .testimonial {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+        }
+        .testimonial p { font-style: italic; margin-bottom: 16px; }
+        
+        .faq details {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .faq summary {
+            padding: 20px 24px;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+            position: relative;
+        }
+        .faq summary::after {
+            content: "+";
+            position: absolute;
+            right: 24px;
+            font-size: 1.4rem;
+            transition: transform 0.3s;
+        }
+        .faq details[open] summary::after { content: "−"; }
+        
+        footer {
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            padding: 48px 24px;
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--muted);
+        }
+        
+        @media (max-width: 480px) {
+            .nav-links { gap: 18px; font-size: 0.9rem; }
+            .hero h1 { font-size: 2.6rem; }
+            section { padding: 60px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAV -->
+    <nav class="nav">
+        <div class="nav-inner">
+            <div class="logo">Fairway Social</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#book">Book</a>
+                <button class="dark-toggle" id="darkToggle">☾</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <h1>Play.<br>Drink.<br>Connect.</h1>
+        <p>South Boston’s premier golf simulator bar. 12 state-of-the-art bays, craft cocktails, and neighborhood vibes.</p>
+        <button class="cta-btn" onclick="document.getElementById('book').scrollIntoView({ behavior: 'smooth' })">Reserve a Bay</button>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features">
+        <h2>The Experience</h2>
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">⛳</div>
+                <h3>12 Simulator Bays</h3>
+                <p>Trackman 4 and Full Swing simulators with 50+ championship courses.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🍺</div>
+                <h3>Craft Bar</h3>
+                <p>Local drafts, signature cocktails, and an extensive whiskey list.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">👥</div>
+                <h3>Private Events</h3>
+                <p>Perfect for corporate outings, bachelor parties, and group nights.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🏆</div>
+                <h3>League Play</h3>
+                <p>Weekly leagues, tournaments, and member perks all season long.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing">
+        <h2>Play Your Way</h2>
+        <table class="pricing-table">
+            <thead>
+                <tr>
+                    <th>Tier</th>
+                    <th>Rate</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Off-Peak</strong></td>
+                    <td>$35/hr</td>
+                    <td>Mon–Thu before 5pm</td>
+                </tr>
+                <tr>
+                    <td><strong>Prime</strong></td>
+                    <td>$55/hr</td>
+                    <td>Evenings &amp; weekends</td>
+                </tr>
+                <tr>
+                    <td><strong>League</strong></td>
+                    <td>$89/mo</td>
+                    <td>Unlimited off-peak + league entry</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- BOOKING FORM -->
+    <section id="book">
+        <h2>Book Your Bay</h2>
+        <div class="form-container" id="formContainer">
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="date">Date &amp; Time</label>
+                    <input type="datetime-local" id="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="size">Party Size</label>
+                    <select id="size" required>
+                        <option value="">Select size</option>
+                        <option value="2">2 guests</option>
+                        <option value="3">3 guests</option>
+                        <option value="4">4 guests</option>
+                        <option value="5">5 guests</option>
+                        <option value="6">6 guests</option>
+                    </select>
+                </div>
+                <button type="submit" class="cta-btn" style="width:100%;">Confirm Reservation</button>
+            </form>
+        </div>
+        <div class="form-container success-state" id="successState">
+            <div style="font-size:3rem;margin-bottom:16px;">✅</div>
+            <h3 style="margin-bottom:8px;">Reservation Confirmed!</h3>
+            <p style="color:var(--muted)">We’ve sent a confirmation email. See you on the course.</p>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section>
+        <h2>Neighborhood Voices</h2>
+        <div class="testimonials">
+            <div class="testimonial">
+                <p>“Best night out in Southie in years. The simulators are unreal and the staff makes it feel like your own club.”</p>
+                <strong>— Mike D., Dorchester</strong>
+            </div>
+            <div class="testimonial">
+                <p>“Booked a corporate event here and it was flawless. Everyone is already asking when we’re coming back.”</p>
+                <strong>— Sarah K., Seaport</strong>
+            </div>
+            <div class="testimonial">
+                <p>“League nights are my favorite part of the week. Competitive but friendly, and the beers are always cold.”</p>
+                <strong>— James R., South Boston</strong>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section>
+        <h2>Questions?</h2>
+        <div class="faq">
+            <details>
+                <summary>What’s the minimum age?</summary>
+                <p style="padding:0 24px 20px;">21+ after 8pm. All ages welcome before 8pm with adult supervision.</p>
+            </details>
+            <details>
+                <summary>Can I bring my own clubs?</summary>
+                <p style="padding:0 24px 20px;">Absolutely. We also have a full set of rental clubs available at no extra charge.</p>
+            </details>
+            <details>
+                <summary>How far in advance should I book?</summary>
+                <p style="padding:0 24px 20px;">Weekends fill up quickly. We recommend booking at least 3–5 days ahead.</p>
+            </details>
+            <details>
+                <summary>Do you host private events?</summary>
+                <p style="padding:0 24px 20px;">Yes. We have packages for groups of 8–40. Reach out via the booking form or email us.</p>
+            </details>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p><strong>Fairway Social</strong> • 148 W Broadway, South Boston, MA 02127</p>
+        <p style="margin-top:8px;">Open daily: 11am – 11pm • League nights Tuesdays &amp; Thursdays 7pm</p>
+    </footer>
+
+    <script>
+        // Dark mode toggle
+        const toggle = document.getElementById('darkToggle');
+        const body = document.body;
+        
+        if (localStorage.getItem('darkMode') === 'true') {
+            body.classList.add('dark');
+            toggle.textContent = '☀︎';
+        }
+        
+        toggle.addEventListener('click', () => {
+            body.classList.toggle('dark');
+            const isDark = body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            toggle.textContent = isDark ? '☀︎' : '☾';
+        });
+        
+        // Booking form
+        const form = document.getElementById('bookingForm');
+        const formContainer = document.getElementById('formContainer');
+        const successState = document.getElementById('successState');
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Simple validation
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const date = document.getElementById('date').value;
+            const size = document.getElementById('size').value;
+            
+            if (!name || !email || !date || !size) {
+                alert('Please fill out all fields.');
+                return;
+            }
+            
+            if (!email.includes('@')) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            
+            // Show success
+            formContainer.style.display = 'none';
+            successState.style.display = 'block';
+            
+            // Reset form after 5 seconds for demo
+            setTimeout(() => {
+                form.reset();
+                formContainer.style.display = 'block';
+                successState.style.display = 'none';
+            }, 5000);
+        });
+        
+        // Smooth scroll for nav links
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

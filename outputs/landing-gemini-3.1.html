@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fairway Social | South Boston</title>
+    <style>
+        /* CSS Variables */
+        :root {
+            --bg-base: #f8fafc;
+            --bg-surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --primary: #15803d;
+            --primary-hover: #166534;
+            --accent: #d97706;
+            --border: #e2e8f0;
+            --nav-bg: rgba(255, 255, 255, 0.95);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg-base: #0f172a;
+            --bg-surface: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --primary: #22c55e;
+            --primary-hover: #16a34a;
+            --accent: #fbbf24;
+            --border: #334155;
+            --nav-bg: rgba(30, 41, 59, 0.95);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Reset & Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* Layout & Typography */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        h1, h2, h3 {
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
+        h2 { font-size: clamp(2rem, 4vw, 2.5rem); text-align: center; margin-bottom: 3rem; }
+        h3 { font-size: 1.25rem; }
+
+        p { color: var(--text-muted); margin-bottom: 1rem; }
+
+        .section-padding { padding: 6rem 0; }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--text-main);
+            border: 2px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text-main);
+            background-color: transparent;
+        }
+
+        /* Navigation */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: var(--nav-bg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        .logo svg {
+            width: 28px;
+            height: 28px;
+            fill: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .nav-links.active {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                right: 0;
+                background-color: var(--bg-surface);
+                padding: 1.5rem;
+                border-bottom: 1px solid var(--border);
+                box-shadow: var(--shadow);
+            }
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--bg-base);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .icon-moon { display: none; }
+        [data-theme="dark"] .icon-sun { display: none; }
+        [data-theme="dark"] .icon-moon { display: block; }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn { display: block; }
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            padding: 8rem 0;
+            text-align: center;
+            overflow: hidden;
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, transparent, var(--bg-base));
+            z-index: -1;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        @media (max-width: 480px) {
+            .hero-btns { flex-direction: column; }
+        }
+
+        /* Amenities */
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background-color: var(--bg-surface);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+            border-color: var(--primary);
+        }
+
+        .card-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background-color: rgba(21, 128, 61, 0.1);
+            border-radius: 50%;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        /* Pricing */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .price-card {
+            background-color: var(--bg-surface);
+            padding: 3rem 2rem;
+            border-radius: 1.5rem;
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .price-card.popular {
+            border: 2px solid var(--primary);
+            position: relative;
+            transform: scale(1.05);
+            box-shadow: var(--shadow);
+        }
+
+        @media (max-width: 1024px) {
+            .price-card.popular { transform: scale(1); }
+        }
+
+        .badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary);
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 1.5rem 0;
+        }
+
+        .price span {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .price-features {
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .price-features li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Booking Form */
+        .booking-section {
+            background-color: var(--bg-surface);
+            border-radius: 2rem;
+            padding: 4rem 2rem;
+            border: 1px solid var(--border);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.2);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+
+        .error-msg {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        #success-message {
+            display: none;
+            text-align: center;
+            padding: 3rem 0;
+            animation: fadeIn 0.5s ease;
+        }
+
+        #success-message svg {
+            width: 64px;
+            height: 64px;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        /* Testimonials */
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .testimonial-card {
+            background-color: var(--bg-surface);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .quote-icon {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 24px;
+            height: 24px;
+            color: var(--border);
+        }
+
+        .author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .author-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* FAQ */
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        details {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2315803d'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 4v16m8-8H4'/%3E%3C/svg%3E");
+            background-size: contain;
+            transition: transform 0.3s ease;
+        }
+
+        [data-theme="dark"] summary::after {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2322c55e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 4v16m8-8H4'/%3E%3C/svg%3E");
+        }
+
+        details[open] summary::after {
+            transform: rotate(45deg);
+        }
+
+        .faq-content {
+            padding: 0 1.5rem 1.5rem;
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--bg-surface);
+            border-top: 1px solid var(--border);
+            padding: 4rem 0 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* SVG Utilities */
+        svg {
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="8" r="6"/>
+                    <path d="M11 14h2v8h-2z" />
+                    <path d="M9 14h6L12 17z" />
+                </svg>
+                Fairway Social
+            </a>
+            
+            <div class="nav-links" id="nav-links">
+                <a href="#amenities">Amenities</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#testimonials">Reviews</a>
+                <a href="#faq">FAQ</a>
+                <a href="#book" class="btn" style="padding: 0.5rem 1.25rem;">Book Now</a>
+            </div>
+
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Dark Mode">
+                    <svg class="icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <svg class="icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+                <button class="mobile-menu-btn" id="mobile-menu-btn">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="hero">
+        <div class="container hero-content reveal">
+            <h1>Southie's Premier Golf & Social Lounge</h1>
+            <p>Perfect your swing, grab a craft pint, and hang with the neighborhood. Experience world-class simulators paired with local hospitality.</p>
+            <div class="hero-btns">
+                <a href="#book" class="btn">Book a Bay</a>
+                <a href="#pricing" class="btn btn-outline">View Pricing</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Amenities -->
+    <section id="amenities" class="section-padding">
+        <div class="container">
+            <h2 class="reveal">The Fairway Experience</h2>
+            <div class="grid-4">
+                <div class="card reveal">
+                    <div class="card-icon">
+                        <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <h3>Pro Simulators</h3>
+                    <p>TrackMan technology providing hyper-accurate swing data and world-renowned virtual courses.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="card-icon">
+                        <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                        </svg>
+                    </div>
+                    <h3>Craft Cocktails</h3>
+                    <p>Signature drinks, local drafts, and a curated wine list to keep you hydrated on the simulated links.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="card-icon">
+                        <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path d="M3 6h18M3 12h18M3 18h18"/>
+                        </svg>
+                    </div>
+                    <h3>Scratch Kitchen</h3>
+                    <p>Elevated bar bites, artisan flatbreads, and shareables perfect for groups of any size.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="card-icon">
+                        <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 010 7.75"/>
+                        </svg>
+                    </div>
+                    <h3>Private Events</h3>
+                    <p>Full venue buyouts and dedicated bays for corporate outings, birthdays, or bachelor parties.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="section-padding" style="background-color: var(--bg-surface);">
+        <div class="container">
+            <h2 class="reveal">Bay Rental Rates</h2>
+            <div class="pricing-grid">
+                
+                <div class="price-card reveal">
+                    <h3>Off-Peak</h3>
+                    <p>Mon - Thu (Open to 4PM)</p>
+                    <div class="price">$35<span>/hr</span></div>
+                    <ul class="price-features">
+                        <li><svg width="20" height="20" fill="var(--primary)" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg> Up to 6 guests per bay</li>
+                        <li><svg width="20" height="20" fill="var(--primary)" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg> Full access to 150+ courses</li>
+                        <li><svg width="20" height="20" fill="var(--primary)" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg> Club rentals included</li>
+                    </ul>
+                    <a href="#book" class="btn btn-outline" style="width: 100%;">Book Off-Peak</a>
+                </div>
+
+                <div class="price-card popular reveal">
+                    <div class="badge">Most Popular</div>
+                    <h3>Prime</h3>
+                    <p>Nights & Weekends</p>
+                    <div class="price">$55<span>/hr</span></div>
+                    <ul class="price-features">
+                        <li><svg width="20" height="20" fill="var(--primary)" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg> Up to 6 guests per bay</li>
+                        <li><svg width="20" height="20" fill="var(--primary)" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg> Full access to 150+ courses</li>
+                        <li><svg width="20" height="20" fill="var(--primary)" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg> Live sports on bay TVs</li>
+                    </ul>
+                    <a href="#book" class="btn" style="width: 100%;">Book Prime</a>
+                </div>
+
+                <div class="price-card reveal">
+                    <h3>League</h3>
+                    <p>Monthly Membership</p>
+                    <div class="price">$89<span>/mo</span></div>
+                    <ul class="price-features">
+                        <li><svg width="20" height="20" fill="var(--primary)" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg> 2 hours of bay time monthly</li>
+                        <li><svg width="20" height="20" fill="var(--primary)" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg> 15% off food & drinks</li>
+                        <li><svg width="20" height="20" fill="var(--primary)" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg> Exclusive tournament entry</li>
+                    </ul>
+                    <a href="#book" class="btn btn-outline" style="width: 100%;">Join League</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Form -->
+    <section id="book" class="section-padding">
+        <div class="container text-center">
+            <h2 class="reveal">Reserve Your Bay</h2>
+            <div class="booking-section reveal">
+                
+                <form id="booking-form" novalidate>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" class="form-control" placeholder="John Doe" required>
+                            <div class="error-msg" id="err-name">Please enter your name.</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" class="form-control" placeholder="john@example.com" required>
+                            <div class="error-msg" id="err-email">Please enter a valid email.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="date">Requested Date</label>
+                            <input type="date" id="date" class="form-control" required>
+                            <div class="error-msg" id="err-date">Please select a date.</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="size">Party Size</label>
+                            <select id="size" class="form-control" required>
+                                <option value="">Select size...</option>
+                                <option value="1-2">1 - 2 Players</option>
+                                <option value="3-4">3 - 4 Players</option>
+                                <option value="5-6">5 - 6 Players</option>
+                                <option value="7+">7+ (Multi-bay)</option>
+                            </select>
+                            <div class="error-msg" id="err-size">Please select party size.</div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn" style="width: 100%; margin-top: 1rem; padding: 1rem;">Confirm Request</button>
+                </form>
+
+                <div id="success-message">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3>Request Received!</h3>
+                    <p>Thanks for choosing Fairway Social. We've sent a confirmation email with your booking details.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="section-padding" style="background-color: var(--bg-surface);">
+        <div class="container">
+            <h2 class="reveal">Word on the Street</h2>
+            <div class="testimonial-grid">
+                
+                <div class="testimonial-card reveal">
+                    <svg class="quote-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                    </svg>
+                    <p>"Best spot in Southie hands down. The simulators are insanely accurate, and the buffalo chicken flatbread is a must-order. Perfect for a Friday night out with the crew."</p>
+                    <div class="author">
+                        <div class="author-avatar">S</div>
+                        <div>
+                            <h4>Sully M.</h4>
+                            <span style="font-size: 0.875rem; color: var(--text-muted);">South Boston Local</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card reveal" style="transition-delay: 0.1s;">
+                    <svg class="quote-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                    </svg>
+                    <p>"We hosted my husband's 30th birthday here and the staff went above and beyond. The cocktails are actually top-tier, not just 'good for a golf bar'."</p>
+                    <div class="author">
+                        <div class="author-avatar" style="background-color: var(--accent);">E</div>
+                        <div>
+                            <h4>Erin C.</h4>
+                            <span style="font-size: 0.875rem; color: var(--text-muted);">Event Host</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card reveal" style="transition-delay: 0.2s;">
+                    <svg class="quote-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                    </svg>
+                    <p>"Joined the monthly league and my handicap has actually dropped. Being able to practice year-round in Boston without freezing is a total game changer."</p>
+                    <div class="author">
+                        <div class="author-avatar" style="background-color: #0369a1;">F</div>
+                        <div>
+                            <h4>Fitzy</h4>
+                            <span style="font-size: 0.875rem; color: var(--text-muted);">League Member</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="section-padding">
+        <div class="container">
+            <h2 class="reveal">Frequently Asked Questions</h2>
+            <div class="faq-container reveal">
+                
+                <details>
+                    <summary>Do I need to bring my own clubs?</summary>
+                    <div class="faq-content">
+                        Not at all! We provide complimentary, premium men's and women's club rentals at every bay. However, if you prefer to use your own, you are more than welcome to bring your bag.
+                    </div>
+                </details>
+
+                <details>
+                    <summary>How many people fit in one bay?</summary>
+                    <div class="faq-content">
+                        Each simulator bay comfortably fits up to 6 guests. If you have a larger party, we recommend booking adjacent bays or contacting us for a group event package.
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Are kids allowed at Fairway Social?</summary>
+                    <div class="faq-content">
+                        Yes! We are a family-friendly establishment during the day. After 8:00 PM, Fairway Social becomes a 21+ venue. Valid ID is required for entry after 8:00 PM.
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Can I host a private event here?</summary>
+                    <div class="faq-content">
+                        Absolutely. We offer everything from reserved multi-bay sections to full venue buyouts. Our event team will work with you on custom catering and drink packages. Reach out via our contact page for more info.
+                    </div>
+                </details>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <a href="#" class="logo" style="margin-bottom: 1rem;">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="8" r="6"/>
+                            <path d="M11 14h2v8h-2z" />
+                            <path d="M9 14h6L12 17z" />
+                        </svg>
+                        Fairway Social
+                    </a>
+                    <p style="font-size: 0.875rem;">South Boston's premier indoor golf lounge. Eat, drink, and swing year-round.</p>
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 1rem;">Location</h3>
+                    <p style="font-size: 0.875rem; color: var(--text-muted);">
+                        123 Broadway<br>
+                        South Boston, MA 02127<br>
+                        (617) 555-0198
+                    </p>
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 1rem;">Hours</h3>
+                    <ul style="font-size: 0.875rem; color: var(--text-muted); line-height: 2;">
+                        <li>Mon - Wed: 10am - 10pm</li>
+                        <li>Thu - Sat: 10am - 12am</li>
+                        <li>Sun: 10am - 8pm</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; <span id="year"></span> Fairway Social. All rights reserved. (Demo Page)
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Set Year in Footer
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Mobile Menu Toggle
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const navLinks = document.getElementById('nav-links');
+        
+        menuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close mobile menu on click
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+
+        // Dark Mode Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const htmlDoc = document.documentElement;
+        
+        // Check local storage or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme) {
+            htmlDoc.setAttribute('data-theme', savedTheme);
+        } else if (systemPrefersDark) {
+            htmlDoc.setAttribute('data-theme', 'dark');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlDoc.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            htmlDoc.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // Scroll Reveal Animation
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Form Validation & Submission
+        const form = document.getElementById('booking-form');
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            let isValid = true;
+            
+            // Validate Name
+            const name = document.getElementById('name');
+            const errName = document.getElementById('err-name');
+            if(name.value.trim() === '') {
+                errName.style.display = 'block';
+                isValid = false;
+            } else {
+                errName.style.display = 'none';
+            }
+
+            // Validate Email
+            const email = document.getElementById('email');
+            const errEmail = document.getElementById('err-email');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if(!emailRegex.test(email.value)) {
+                errEmail.style.display = 'block';
+                isValid = false;
+            } else {
+                errEmail.style.display = 'none';
+            }
+
+            // Validate Date
+            const date = document.getElementById('date');
+            const errDate = document.getElementById('err-date');
+            if(date.value === '') {
+                errDate.style.display = 'block';
+                isValid = false;
+            } else {
+                errDate.style.display = 'none';
+            }
+
+            // Validate Size
+            const size = document.getElementById('size');
+            const errSize = document.getElementById('err-size');
+            if(size.value === '') {
+                errSize.style.display = 'block';
+                isValid = false;
+            } else {
+                errSize.style.display = 'none';
+            }
+
+            // Success State
+            if(isValid) {
+                form.style.display = 'none';
+                document.getElementById('success-message').style.display = 'block';
+            }
+        });
+
+        // Clear errors on input
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('input', function() {
+                const errId = 'err-' + this.id;
+                const errElement = document.getElementById(errId);
+                if(errElement) errElement.style.display = 'none';
+            });
+        });
+        
+        // Single open details (accordion style)
+        const details = document.querySelectorAll('details');
+        details.forEach((targetDetail) => {
+            targetDetail.addEventListener('click', () => {
+                details.forEach((detail) => {
+                    if (detail !== targetDetail) {
+                        detail.removeAttribute('open');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

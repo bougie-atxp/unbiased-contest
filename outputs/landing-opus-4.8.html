@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Fairway Social — a neighborhood golf-simulator bar in South Boston. Book a bay, grab a pint, and play 200+ courses." />
+<title>Fairway Social · South Boston Golf-Simulator Bar</title>
+<style>
+  :root {
+    --green: #1d5c3f;
+    --green-deep: #123c28;
+    --green-bright: #2f9e6b;
+    --sand: #e8dcc0;
+    --cream: #f7f3ea;
+    --ink: #16211b;
+    --paper: #fbfaf6;
+    --card: #ffffff;
+    --muted: #5c6b62;
+    --line: rgba(18,60,40,0.12);
+    --gold: #c9a227;
+    --shadow: 0 18px 45px -22px rgba(18,60,40,0.45);
+    --radius: 18px;
+    --nav-h: 68px;
+    --maxw: 1160px;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  html[data-theme="dark"] {
+    --green: #3fbf87;
+    --green-deep: #0c1712;
+    --green-bright: #4cd694;
+    --cream: #131b16;
+    --ink: #eef4ef;
+    --paper: #0d1410;
+    --card: #16211b;
+    --muted: #9db0a5;
+    --line: rgba(255,255,255,0.10);
+    --shadow: 0 18px 50px -20px rgba(0,0,0,0.7);
+    --gold: #e2c15a;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { animation: none !important; transition: none !important; }
+  }
+  body {
+    margin: 0;
+    font-family: "Georgia", "Times New Roman", serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    transition: background .5s var(--ease), color .5s var(--ease);
+  }
+  h1, h2, h3, .brand, .eyebrow, nav a, .btn, .tier-name, .price, th {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  h1, h2, h3 { line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 .5em; }
+  h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+  p { margin: 0 0 1em; }
+  a { color: inherit; text-decoration: none; }
+  img, svg { display: block; max-width: 100%; }
+
+  .wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
+  section { padding: clamp(56px, 9vw, 110px) 0; }
+  .eyebrow {
+    text-transform: uppercase; letter-spacing: 0.22em; font-size: .72rem;
+    font-weight: 700; color: var(--green); margin-bottom: 14px; display: inline-block;
+  }
+  .section-head { max-width: 640px; margin-bottom: 48px; }
+  .section-head p { color: var(--muted); font-size: 1.08rem; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    padding: 14px 26px; border-radius: 999px; font-weight: 700; font-size: .95rem;
+    letter-spacing: .01em; cursor: pointer; border: 1.5px solid transparent;
+    transition: transform .25s var(--ease), box-shadow .25s var(--ease), background .25s, color .25s;
+    will-change: transform;
+  }
+  .btn-primary { background: var(--green); color: #fff; box-shadow: 0 10px 26px -12px rgba(29,92,63,.9); }
+  html[data-theme="dark"] .btn-primary { color: #0c1712; }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 18px 34px -14px rgba(29,92,63,.95); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn-ghost:hover { transform: translateY(-3px); border-color: var(--green); color: var(--green); }
+
+  /* NAV */
+  header.nav {
+    position: sticky; top: 0; z-index: 100; height: var(--nav-h);
+    background: color-mix(in srgb, var(--paper) 82%, transparent);
+    backdrop-filter: blur(14px) saturate(1.4);
+    border-bottom: 1px solid var(--line);
+    transition: background .5s var(--ease), border-color .5s var(--ease);
+  }
+  .nav-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; font-size: 1.18rem; letter-spacing: -.01em; }
+  .brand .mark { width: 34px; height: 34px; flex: 0 0 auto; }
+  .nav-links { display: flex; align-items: center; gap: 30px; }
+  .nav-links a.link { font-size: .92rem; font-weight: 600; color: var(--muted); position: relative; }
+  .nav-links a.link::after {
+    content: ""; position: absolute; left: 0; bottom: -6px; height: 2px; width: 0;
+    background: var(--green); transition: width .3s var(--ease);
+  }
+  .nav-links a.link:hover { color: var(--ink); }
+  .nav-links a.link:hover::after { width: 100%; }
+  .nav-actions { display: flex; align-items: center; gap: 14px; }
+
+  .toggle {
+    width: 54px; height: 30px; border-radius: 999px; border: 1.5px solid var(--line);
+    background: var(--cream); cursor: pointer; position: relative; padding: 0; flex: 0 0 auto;
+    transition: background .4s var(--ease), border-color .4s;
+  }
+  .toggle .knob {
+    position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--green); display: grid; place-items: center;
+    transition: transform .4s var(--ease), background .4s;
+  }
+  html[data-theme="dark"] .toggle .knob { transform: translateX(24px); }
+  .toggle .knob svg { width: 14px; height: 14px; color: #fff; }
+  html[data-theme="dark"] .toggle .knob svg { color: #0c1712; }
+
+  .nav-cta { display: inline-flex; }
+  .menu-btn { display: none; background: none; border: 0; cursor: pointer; padding: 8px; color: var(--ink); }
+  .menu-btn svg { width: 26px; height: 26px; }
+
+  /* HERO */
+  .hero { position: relative; overflow: hidden; padding-top: clamp(40px, 7vw, 80px); }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 54px; align-items: center; }
+  .hero h1 { font-size: clamp(2.5rem, 6.4vw, 4.6rem); font-weight: 800; }
+  .hero h1 .accent { color: var(--green); position: relative; white-space: nowrap; }
+  .hero-lede { font-size: clamp(1.05rem, 1.6vw, 1.28rem); color: var(--muted); max-width: 30em; }
+  .hero-cta-row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 28px; }
+  .hero-stats { display: flex; gap: 34px; margin-top: 44px; flex-wrap: wrap; }
+  .hero-stats .stat .n { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 1.9rem; font-weight: 800; color: var(--green); }
+  .hero-stats .stat .l { font-size: .82rem; text-transform: uppercase; letter-spacing: .13em; color: var(--muted); }
+
+  /* Hero art: simulator screen scene */
+  .hero-art {
+    position: relative; border-radius: 24px; overflow: hidden; box-shadow: var(--shadow);
+    aspect-ratio: 4 / 3.2; background: linear-gradient(160deg, var(--green-deep), var(--green));
+  }
+  .hero-art .sky {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(120% 80% at 70% 8%, rgba(255,255,255,.28), transparent 55%),
+      linear-gradient(180deg, #bfe2f2 0%, #dff0e2 46%, transparent 47%);
+  }
+  html[data-theme="dark"] .hero-art .sky {
+    background:
+      radial-gradient(120% 80% at 70% 8%, rgba(255,255,255,.12), transparent 55%),
+      linear-gradient(180deg, #17324a 0%, #1c4a37 46%, transparent 47%);
+  }
+  .hero-art .fairway {
+    position: absolute; left: -8%; right: -8%; bottom: 0; height: 62%;
+    background: linear-gradient(180deg, #3ea56d, #1d5c3f);
+    clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+  }
+  .hero-art .green-circle {
+    position: absolute; left: 50%; top: 44%; width: 26%; aspect-ratio: 1; transform: translateX(-50%);
+    background: radial-gradient(circle at 50% 40%, #6fd39a, #2f8f5e);
+    border-radius: 50%; box-shadow: inset 0 -6px 14px rgba(0,0,0,.2);
+  }
+  .hero-art .flag { position: absolute; left: 50%; top: 30%; transform: translateX(-50%); }
+  .hero-art .flag .pole { width: 2px; height: 62px; background: #fff; margin: 0 auto; }
+  .hero-art .flag .cloth {
+    width: 26px; height: 17px; background: var(--gold); position: absolute; top: 0; left: 1px;
+    clip-path: polygon(0 0, 100% 22%, 0 52%); animation: wave 3.4s ease-in-out infinite;
+    transform-origin: left center;
+  }
+  @keyframes wave { 0%,100% { transform: skewX(0deg) scaleX(1); } 50% { transform: skewX(-9deg) scaleX(.92); } }
+  .hero-art .ball {
+    position: absolute; left: 30%; bottom: 12%; width: 16px; height: 16px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff, #cdd3ce);
+    box-shadow: 0 3px 6px rgba(0,0,0,.3); animation: roll 6s var(--ease) infinite;
+  }
+  @keyframes roll {
+    0% { left: 30%; bottom: 12%; transform: scale(1); opacity: 1; }
+    55% { left: 49%; bottom: 44%; transform: scale(.7); opacity: 1; }
+    70%, 100% { left: 50%; bottom: 47%; transform: scale(.55); opacity: .0; }
+  }
+  .hero-art .hud {
+    position: absolute; left: 14px; bottom: 14px; right: 14px; display: flex; gap: 8px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  .hero-art .chip {
+    background: rgba(0,0,0,.42); color: #fff; border: 1px solid rgba(255,255,255,.18);
+    border-radius: 10px; padding: 7px 11px; backdrop-filter: blur(4px); flex: 1;
+  }
+  .hero-art .chip b { display: block; font-size: 1.05rem; letter-spacing: .02em; }
+  .hero-art .chip span { font-size: .6rem; text-transform: uppercase; letter-spacing: .12em; opacity: .8; }
+  .hero-badge {
+    position: absolute; top: 16px; right: 16px; background: var(--gold); color: #201a05;
+    font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 800; font-size: .7rem;
+    letter-spacing: .1em; text-transform: uppercase; padding: 8px 12px; border-radius: 999px;
+  }
+
+  /* Marquee */
+  .marquee { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--cream); overflow: hidden; }
+  .marquee-track { display: flex; gap: 48px; padding: 16px 0; white-space: nowrap; width: max-content; animation: scrollx 26s linear infinite; }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+  .marquee span { font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-size: .82rem; color: var(--muted); display: inline-flex; align-items: center; gap: 48px; }
+  .marquee span::after { content: "⛳"; opacity: .5; }
+  @keyframes scrollx { to { transform: translateX(-50%); } }
+
+  /* Features */
+  .feat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  .feat {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 30px 26px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+    transition: transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s;
+  }
+  .feat:hover { transform: translateY(-8px); border-color: color-mix(in srgb, var(--green) 40%, var(--line)); }
+  .feat .ficon {
+    width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center;
+    background: color-mix(in srgb, var(--green) 14%, transparent); color: var(--green); margin-bottom: 18px;
+  }
+  .feat .ficon svg { width: 26px; height: 26px; }
+  .feat h3 { font-size: 1.16rem; }
+  .feat p { color: var(--muted); font-size: .96rem; margin: 0; }
+
+  /* Pricing */
+  .pricing { background: var(--cream); transition: background .5s var(--ease); }
+  .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-items: stretch; }
+  .tier {
+    background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 34px 30px;
+    display: flex; flex-direction: column; box-shadow: var(--shadow); position: relative;
+    transition: transform .4s var(--ease), box-shadow .4s var(--ease);
+  }
+  .tier:hover { transform: translateY(-8px); }
+  .tier.featured {
+    border: 1.5px solid var(--green); background: linear-gradient(180deg, color-mix(in srgb, var(--green) 8%, var(--card)), var(--card));
+    transform: scale(1.03);
+  }
+  .tier.featured:hover { transform: scale(1.03) translateY(-8px); }
+  .tier .flag-tag {
+    position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+    background: var(--green); color: #fff; font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 999px;
+  }
+  html[data-theme="dark"] .tier.featured .flag-tag { color: #0c1712; }
+  .tier-name { font-size: .82rem; text-transform: uppercase; letter-spacing: .16em; color: var(--muted); font-weight: 700; }
+  .price { font-size: 3rem; font-weight: 800; margin: 12px 0 2px; letter-spacing: -.03em; }
+  .price small { font-size: 1rem; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+  .tier .desc { color: var(--muted); font-size: .95rem; min-height: 42px; }
+  .tier ul { list-style: none; padding: 0; margin: 20px 0 28px; display: grid; gap: 12px; }
+  .tier li { display: flex; gap: 11px; align-items: flex-start; font-size: .95rem; }
+  .tier li svg { width: 19px; height: 19px; flex: 0 0 auto; color: var(--green); margin-top: 2px; }
+  .tier .btn { margin-top: auto; width: 100%; }
+
+  /* Booking form */
+  .book-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 54px; align-items: center; }
+  .book-copy ul { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 14px; }
+  .book-copy li { display: flex; gap: 12px; align-items: flex-start; color: var(--muted); }
+  .book-copy li svg { width: 22px; height: 22px; color: var(--green); flex: 0 0 auto; margin-top: 1px; }
+  .form-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 24px;
+    padding: 34px; box-shadow: var(--shadow);
+  }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 600; font-size: .82rem; letter-spacing: .04em; margin-bottom: 7px; }
+  .field input, .field select {
+    width: 100%; padding: 13px 15px; border-radius: 12px; border: 1.5px solid var(--line);
+    background: var(--paper); color: var(--ink); font-size: 1rem; font-family: inherit;
+    transition: border-color .25s, box-shadow .25s;
+  }
+  .field input:focus, .field select:focus {
+    outline: none; border-color: var(--green);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--green) 18%, transparent);
+  }
+  .field.invalid input, .field.invalid select { border-color: #d1435b; }
+  .err { color: #d1435b; font-family: "Helvetica Neue", Arial, sans-serif; font-size: .76rem; margin-top: 6px; min-height: 1em; display: none; }
+  .field.invalid .err { display: block; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-card .btn { width: 100%; margin-top: 6px; }
+  .success {
+    text-align: center; padding: 24px 8px; display: none;
+  }
+  .success.show { display: block; animation: pop .5s var(--ease); }
+  @keyframes pop { from { opacity: 0; transform: scale(.9) translateY(10px); } to { opacity: 1; transform: none; } }
+  .success .check {
+    width: 74px; height: 74px; margin: 0 auto 18px; border-radius: 50%;
+    background: color-mix(in srgb, var(--green) 16%, transparent); display: grid; place-items: center;
+  }
+  .success .check svg { width: 38px; height: 38px; color: var(--green); }
+  .success h3 { font-size: 1.5rem; }
+  .success p { color: var(--muted); }
+  .success .btn { width: auto; margin-top: 12px; }
+
+  /* Testimonials */
+  .testimonials { background: var(--cream); transition: background .5s var(--ease); }
+  .quote-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .quote {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 30px; box-shadow: var(--shadow); display: flex; flex-direction: column;
+    transition: transform .4s var(--ease);
+  }
+  .quote:hover { transform: translateY(-6px); }
+  .stars { display: flex; gap: 3px; margin-bottom: 14px; color: var(--gold); }
+  .stars svg { width: 18px; height: 18px; }
+  .quote p { font-size: 1.05rem; font-style: italic; }
+  .who { display: flex; align-items: center; gap: 12px; margin-top: auto; padding-top: 14px; }
+  .avatar {
+    width: 44px; height: 44px; border-radius: 50%; flex: 0 0 auto; display: grid; place-items: center;
+    color: #fff; font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 700;
+  }
+  html[data-theme="dark"] .avatar { color: #0c1712; }
+  .who .name { font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: .95rem; }
+  .who .role { color: var(--muted); font-size: .82rem; }
+
+  /* FAQ */
+  .faq-list { max-width: 780px; margin: 0 auto; border-top: 1px solid var(--line); }
+  .faq-item { border-bottom: 1px solid var(--line); }
+  .faq-q {
+    width: 100%; background: none; border: 0; cursor: pointer; text-align: left;
+    display: flex; justify-content: space-between; align-items: center; gap: 20px;
+    padding: 24px 4px; font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 700;
+    font-size: 1.08rem; color: var(--ink);
+  }
+  .faq-q .ico {
+    width: 30px; height: 30px; flex: 0 0 auto; border-radius: 50%; border: 1.5px solid var(--line);
+    display: grid; place-items: center; transition: transform .35s var(--ease), background .35s, border-color .35s, color .35s;
+  }
+  .faq-q .ico svg { width: 15px; height: 15px; }
+  .faq-item.open .faq-q .ico { transform: rotate(45deg); background: var(--green); border-color: var(--green); color: #fff; }
+  html[data-theme="dark"] .faq-item.open .faq-q .ico { color: #0c1712; }
+  .faq-a { max-height: 0; overflow: hidden; transition: max-height .4s var(--ease); }
+  .faq-a p { color: var(--muted); padding: 0 4px 24px; margin: 0; max-width: 62ch; }
+
+  /* CTA banner */
+  .cta-banner { }
+  .cta-inner {
+    background: linear-gradient(150deg, var(--green), var(--green-deep));
+    border-radius: 28px; padding: clamp(40px, 6vw, 68px); text-align: center; color: #fff;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .cta-inner h2 { color: #fff; }
+  .cta-inner p { color: rgba(255,255,255,.85); max-width: 46ch; margin: 0 auto 26px; }
+  .cta-inner .btn-primary { background: var(--gold); color: #201a05; }
+  .cta-inner .dot { position: absolute; border-radius: 50%; background: rgba(255,255,255,.07); }
+  .cta-inner .dot.d1 { width: 220px; height: 220px; top: -70px; left: -60px; }
+  .cta-inner .dot.d2 { width: 300px; height: 300px; bottom: -140px; right: -80px; }
+
+  /* Footer */
+  footer { background: var(--green-deep); color: rgba(255,255,255,.82); padding: 64px 0 28px; }
+  html[data-theme="dark"] footer { border-top: 1px solid var(--line); }
+  .foot-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 40px; }
+  footer .brand { color: #fff; margin-bottom: 14px; }
+  footer h4 { font-family: "Helvetica Neue", Arial, sans-serif; text-transform: uppercase; letter-spacing: .14em; font-size: .74rem; color: rgba(255,255,255,.55); margin: 0 0 16px; }
+  footer p, footer li { color: rgba(255,255,255,.78); font-size: .95rem; }
+  footer ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 9px; }
+  footer a:hover { color: #fff; text-decoration: underline; }
+  .hours-row { display: flex; justify-content: space-between; gap: 16px; padding: 5px 0; border-bottom: 1px dashed rgba(255,255,255,.14); font-size: .92rem; }
+  .foot-bottom { margin-top: 48px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.12); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: .82rem; color: rgba(255,255,255,.5); }
+
+  /* Reveal on scroll */
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* Responsive */
+  @media (max-width: 940px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+    .hero-art { max-width: 460px; }
+    .feat-grid { grid-template-columns: repeat(2, 1fr); }
+    .price-grid { grid-template-columns: 1fr; max-width: 440px; margin: 0 auto; }
+    .tier.featured, .tier.featured:hover { transform: none; }
+    .tier.featured:hover { transform: translateY(-8px); }
+    .book-grid { grid-template-columns: 1fr; gap: 36px; }
+    .quote-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+    .foot-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 720px) {
+    .nav-links { display: none; }
+    .menu-btn { display: inline-flex; }
+    .nav-cta { display: none; }
+    header.nav.open .nav-links {
+      display: flex; position: absolute; top: var(--nav-h); left: 0; right: 0; flex-direction: column;
+      align-items: flex-start; gap: 4px; padding: 18px 22px 24px; background: var(--paper);
+      border-bottom: 1px solid var(--line); box-shadow: var(--shadow);
+    }
+    header.nav.open .nav-links a.link { padding: 8px 0; font-size: 1.05rem; }
+  }
+  @media (max-width: 480px) {
+    .feat-grid { grid-template-columns: 1fr; }
+    .foot-grid { grid-template-columns: 1fr; }
+    .row2 { grid-template-columns: 1fr; }
+    .hero-stats { gap: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a href="#top" class="brand" aria-label="Fairway Social home">
+      <svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <circle cx="20" cy="20" r="19" fill="var(--green)"/>
+        <path d="M15 30V11l11 4-11 4" stroke="#fff" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="15" cy="30" r="2.4" fill="var(--gold)"/>
+      </svg>
+      Fairway Social
+    </a>
+
+    <nav class="nav-links" aria-label="Primary">
+      <a class="link" href="#features">Amenities</a>
+      <a class="link" href="#pricing">Pricing</a>
+      <a class="link" href="#book">Book</a>
+      <a class="link" href="#faq">FAQ</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="toggle" id="themeToggle" role="switch" aria-checked="false" aria-label="Toggle dark mode">
+        <span class="knob">
+          <svg id="knobIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4.5"/>
+            <path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/>
+          </svg>
+        </span>
+      </button>
+      <a href="#book" class="btn btn-primary nav-cta">Book a Bay</a>
+      <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<a id="top"></a>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy reveal">
+      <span class="eyebrow">Southie's Living-Room Golf Club</span>
+      <h1>Tee off after work.<br><span class="accent">Pint in hand.</span></h1>
+      <p class="hero-lede">Six state-of-the-art simulator bays, 200+ world courses, a proper craft-beer list, and a kitchen worth staying for — right on West Broadway.</p>
+      <div class="hero-cta-row">
+        <a href="#book" class="btn btn-primary">Book a Bay →</a>
+        <a href="#pricing" class="btn btn-ghost">See Pricing</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="n">6</div><div class="l">Sim Bays</div></div>
+        <div class="stat"><div class="n">200+</div><div class="l">Courses</div></div>
+        <div class="stat"><div class="n">24</div><div class="l">Craft Taps</div></div>
+      </div>
+    </div>
+
+    <div class="hero-art reveal" aria-hidden="true">
+      <div class="hero-badge">Now Open · Southie</div>
+      <div class="sky"></div>
+      <div class="fairway"></div>
+      <div class="green-circle"></div>
+      <div class="flag"><div class="cloth"></div><div class="pole"></div></div>
+      <div class="ball"></div>
+      <div class="hud">
+        <div class="chip"><b>287 yds</b><span>Carry</span></div>
+        <div class="chip"><b>1.48</b><span>Smash</span></div>
+        <div class="chip"><b>St Andrews</b><span>Course</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>Trackman-grade sims</span><span>24 craft taps</span><span>Chef-driven kitchen</span><span>Private events</span><span>Leagues &amp; lessons</span>
+    <span>Trackman-grade sims</span><span>24 craft taps</span><span>Chef-driven kitchen</span><span>Private events</span><span>Leagues &amp; lessons</span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Amenities</span>
+      <h2>Everything a Southie night needs</h2>
+      <p>Half golf club, half neighborhood bar — engineered so beginners and scratch golfers have an equally good time.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat reveal">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></div>
+        <h3>Trackman-grade sims</h3>
+        <p>Dual-camera launch monitors track every carry, spin, and smash factor down to the decimal — no guesswork.</p>
+      </div>
+      <div class="feat reveal">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l-1 9a5 5 0 0 1-10 0L6 3Z"/><path d="M18 5h2a2 2 0 0 1 0 4h-2M6 21h12"/></svg></div>
+        <h3>24 rotating taps</h3>
+        <p>Local New England brews, a tight cocktail menu, and zero-proof options — poured tableside to your bay.</p>
+      </div>
+      <div class="feat reveal">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 6.9H21l-5.3 4 2 7L12 16.9 6.3 20.9l2-7L3 9.9h6.6L12 3Z"/></svg></div>
+        <h3>Chef-driven kitchen</h3>
+        <p>Wood-grilled smash burgers, crispy Brussels, and a lobster roll that makes visitors question their whole life.</p>
+      </div>
+      <div class="feat reveal">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11"/></svg></div>
+        <h3>Leagues &amp; private events</h3>
+        <p>Weeknight leagues, corporate buyouts, and birthday bays with a dedicated host. Up to 60 guests, easy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="pricing">
+  <div class="wrap">
+    <div class="section-head reveal" style="max-width:680px">
+      <span class="eyebrow">Pricing</span>
+      <h2>Simple rates, no membership required</h2>
+      <p>Grab a bay by the hour or go all-in with a league pass. Each bay seats up to six players.</p>
+    </div>
+    <div class="price-grid">
+
+      <div class="tier reveal">
+        <div class="tier-name">Off-Peak</div>
+        <div class="price">$35<small>/hr</small></div>
+        <p class="desc">Weekdays before 5pm. Perfect for lunch rounds and lessons.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Up to 6 players per bay</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>All 200+ courses unlocked</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Loaner clubs included</li>
+        </ul>
+        <a href="#book" class="btn btn-ghost">Book Off-Peak</a>
+      </div>
+
+      <div class="tier featured reveal">
+        <div class="flag-tag">Most Popular</div>
+        <div class="tier-name">Prime</div>
+        <div class="price">$55<small>/hr</small></div>
+        <p class="desc">Evenings &amp; weekends. The full Fairway Social night out.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Everything in Off-Peak</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Priority bay reservation</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Tableside food &amp; drink service</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Free re-rack on your next round</li>
+        </ul>
+        <a href="#book" class="btn btn-primary">Book Prime</a>
+      </div>
+
+      <div class="tier reveal">
+        <div class="tier-name">League</div>
+        <div class="price">$89<small>/mo</small></div>
+        <p class="desc">Weekly team play, a season-long ladder, and perks all month.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Reserved weekly league slot</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>20% off all off-peak hours</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Handicap tracking &amp; prizes</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Members-only events</li>
+        </ul>
+        <a href="#book" class="btn btn-ghost">Join a League</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- BOOKING FORM -->
+<section id="book">
+  <div class="wrap book-grid">
+    <div class="book-copy reveal">
+      <span class="eyebrow">Reserve</span>
+      <h2>Lock in your bay</h2>
+      <p style="color:var(--muted); font-size:1.08rem;">Tell us when and how many. We'll confirm by email within the hour — no deposit, no membership, no hassle.</p>
+      <ul>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Same-day bookings welcome</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 5v5l3 3"/></svg>Bays held 15 minutes past start</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Free cancellation up to 24h prior</li>
+      </ul>
+    </div>
+
+    <div class="form-card reveal">
+      <form id="bookForm" novalidate>
+        <div class="field" id="f-name">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" placeholder="Rory McSouthie" autocomplete="name" />
+          <div class="err">Please enter your name.</div>
+        </div>
+        <div class="field" id="f-email">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="you@email.com" autocomplete="email" />
+          <div class="err">Enter a valid email address.</div>
+        </div>
+        <div class="row2">
+          <div class="field" id="f-date">
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date" />
+            <div class="err">Pick a date (today or later).</div>
+          </div>
+          <div class="field" id="f-party">
+            <label for="party">Party size</label>
+            <select id="party" name="party">
+              <option value="">Select…</option>
+              <option>1</option><option>2</option><option>3</option>
+              <option>4</option><option>5</option><option>6</option>
+              <option>7+ (event)</option>
+            </select>
+            <div class="err">Choose a party size.</div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Request Booking →</button>
+      </form>
+
+      <div class="success" id="success" role="status" aria-live="polite">
+        <div class="check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <h3>You're on the tee sheet!</h3>
+        <p id="successMsg">We'll email your confirmation shortly.</p>
+        <button class="btn btn-ghost" id="resetBtn" type="button">Book another bay</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="wrap">
+    <div class="section-head reveal" style="max-width:640px">
+      <span class="eyebrow">The word on Broadway</span>
+      <h2>Southie's new favorite Thursday</h2>
+    </div>
+    <div class="quote-grid">
+      <div class="quote reveal">
+        <div class="stars" aria-label="5 out of 5 stars">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+        </div>
+        <p>"Booked a bay for four, stayed for five hours. The sims are legit and the lobster roll ended the argument about where to eat."</p>
+        <div class="who">
+          <div class="avatar" style="background:#1d5c3f">MC</div>
+          <div><div class="name">Maura C.</div><div class="role">Regular · City Point</div></div>
+        </div>
+      </div>
+
+      <div class="quote reveal">
+        <div class="stars" aria-label="5 out of 5 stars">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+        </div>
+        <p>"We moved our whole team offsite here. The league setup is dangerously competitive — in the best way. Book Prime, thank me later."</p>
+        <div class="who">
+          <div class="avatar" style="background:#c9a227">DK</div>
+          <div><div class="name">Devin K.</div><div class="role">League captain · Seaport</div></div>
+        </div>
+      </div>
+
+      <div class="quote reveal">
+        <div class="stars" aria-label="5 out of 5 stars">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17l-6.2 3.6 1.6-6.7L2.2 8.9l6.9-.6L12 2Z"/></svg>
+        </div>
+        <p>"Never swung a club before Friday. The staff got me set up, and by the back nine I was actually hitting greens. Zero pretension."</p>
+        <div class="who">
+          <div class="avatar" style="background:#2f9e6b">TR</div>
+          <div><div class="name">Tomás R.</div><div class="role">First-timer · Dorchester</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="section-head reveal" style="text-align:center; margin-left:auto; margin-right:auto;">
+      <span class="eyebrow">Good to know</span>
+      <h2>Frequently asked</h2>
+    </div>
+    <div class="faq-list reveal">
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          Do I need my own clubs?
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-a"><p>Nope. Every bay comes stocked with quality right- and left-handed loaner sets, plus gloves on request. Bring your own gamers if you'd rather — there's plenty of room.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          Is it beginner-friendly, or just for good golfers?
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-a"><p>Both. The sims scale from mulligans-on and gimme putts for total newcomers to tournament-strict scoring for the sharks. Our staff will dial in settings so everyone in your group has fun.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          How many people fit in a bay?
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-a"><p>Comfortably up to six players per bay with lounge seating and a hi-top. Larger groups and events can book multiple adjoining bays — we host buyouts for up to 60 guests.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          Can we just come to eat and drink?
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-a"><p>Absolutely. The bar and dining room are open to walk-ins, no bay required. Pull up for a pint, watch the game on the wall, and grab a bay if one opens up.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner">
+  <div class="wrap">
+    <div class="cta-inner reveal">
+      <div class="dot d1"></div><div class="dot d2"></div>
+      <span class="eyebrow" style="color:var(--gold)">Southie · West Broadway</span>
+      <h2>Your bay is waiting</h2>
+      <p>Six bays, twenty-four taps, and the best two hundred courses on the planet — five minutes from the Red Line.</p>
+      <a href="#book" class="btn btn-primary">Book a Bay →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="brand">
+          <svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <circle cx="20" cy="20" r="19" fill="var(--green)"/>
+            <path d="M15 30V11l11 4-11 4" stroke="#fff" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+            <circle cx="15" cy="30" r="2.4" fill="var(--gold)"/>
+          </svg>
+          Fairway Social
+        </div>
+        <p style="max-width:34ch">A neighborhood golf-simulator bar in the heart of South Boston. Come for the swing, stay for the smash burger.</p>
+      </div>
+
+      <div>
+        <h4>Find us</h4>
+        <ul>
+          <li>412 West Broadway</li>
+          <li>South Boston, MA 02127</li>
+          <li><a href="tel:+16175550142">(617) 555-0142</a></li>
+          <li><a href="mailto:hello@fairwaysocial.com">hello@fairwaysocial.com</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Hours</h4>
+        <div class="hours-row"><span>Mon – Thu</span><span>4pm – 12am</span></div>
+        <div class="hours-row"><span>Friday</span><span>3pm – 1am</span></div>
+        <div class="hours-row"><span>Saturday</span><span>11am – 1am</span></div>
+        <div class="hours-row"><span>Sunday</span><span>11am – 11pm</span></div>
+      </div>
+    </div>
+
+    <div class="foot-bottom">
+      <span>© 2026 Fairway Social LLC · All rights reserved.</span>
+      <span>Must be 21+ after 8pm · Please play responsibly.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Theme toggle (persists in-session) ---------- */
+  var root = document.documentElement;
+  var toggle = document.getElementById("themeToggle");
+  var stored = null;
+  try { stored = localStorage.getItem("fs-theme"); } catch (e) {}
+  var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var startDark = stored ? stored === "dark" : prefersDark;
+  setTheme(startDark);
+
+  function setTheme(dark) {
+    root.setAttribute("data-theme", dark ? "dark" : "light");
+    toggle.setAttribute("aria-checked", dark ? "true" : "false");
+    try { localStorage.setItem("fs-theme", dark ? "dark" : "light"); } catch (e) {}
+  }
+  toggle.addEventListener("click", function () {
+    setTheme(root.getAttribute("data-theme") !== "dark");
+  });
+
+  /* ---------- Mobile menu ---------- */
+  var nav = document.getElementById("nav");
+  var menuBtn = document.getElementById("menuBtn");
+  menuBtn.addEventListener("click", function () {
+    var open = nav.classList.toggle("open");
+    menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  nav.querySelectorAll(".nav-links a").forEach(function (a) {
+    a.addEventListener("click", function () {
+      nav.classList.remove("open");
+      menuBtn.setAttribute("aria-expanded", "false");
+    });
+  });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll(".faq-item").forEach(function (item) {
+    var q = item.querySelector(".faq-q");
+    var a = item.querySelector(".faq-a");
+    q.addEventListener("click", function () {
+      var isOpen = item.classList.contains("open");
+      document.querySelectorAll(".faq-item").forEach(function (other) {
+        other.classList.remove("open");
+        other.querySelector(".faq-a").style.maxHeight = null;
+        other.querySelector(".faq-q").setAttribute("aria-expanded", "false");
+      });
+      if (!isOpen) {
+        item.classList.add("open");
+        a.style.maxHeight = a.scrollHeight + "px";
+        q.setAttribute("aria-expanded", "true");
+      }
+    });
+  });
+
+  /* ---------- Booking form validation ---------- */
+  var form = document.getElementById("bookForm");
+  var success = document.getElementById("success");
+  var successMsg = document.getElementById("successMsg");
+  var resetBtn = document.getElementById("resetBtn");
+
+  var dateInput = document.getElementById("date");
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  dateInput.min = toISO(today);
+  function toISO(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  function setInvalid(id, bad) {
+    document.getElementById(id).classList.toggle("invalid", bad);
+    return !bad;
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = document.getElementById("name").value.trim();
+    var email = document.getElementById("email").value.trim();
+    var date = dateInput.value;
+    var party = document.getElementById("party").value;
+
+    var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+    var dateOk = !!date && new Date(date + "T00:00:00") >= today;
+
+    var v1 = setInvalid("f-name", name.length < 2);
+    var v2 = setInvalid("f-email", !emailOk);
+    var v3 = setInvalid("f-date", !dateOk);
+    var v4 = setInvalid("f-party", !party);
+
+    if (v1 && v2 && v3 && v4) {
+      var pretty = new Date(date + "T00:00:00").toLocaleDateString(undefined, {
+        weekday: "long", month: "long", day: "numeric"
+      });
+      var count = party.indexOf("+") > -1 ? "your group" : party + (party === "1" ? " player" : " players");
+      successMsg.textContent = "Thanks, " + name.split(" ")[0] + " — we've got " + count +
+        " down for " + pretty + ". A confirmation is on its way to " + email + ".";
+      form.style.display = "none";
+      success.classList.add("show");
+      success.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } else {
+      var firstBad = form.querySelector(".field.invalid input, .field.invalid select");
+      if (firstBad) firstBad.focus();
+    }
+  });
+
+  /* Clear invalid state as the user fixes fields */
+  ["name", "email", "date", "party"].forEach(function (id) {
+    var el = document.getElementById(id);
+    el.addEventListener("input", function () {
+      el.closest(".field").classList.remove("invalid");
+    });
+    el.addEventListener("change", function () {
+      el.closest(".field").classList.remove("invalid");
+    });
+  });
+
+  resetBtn.addEventListener("click", function () {
+    form.reset();
+    form.style.display = "";
+    success.classList.remove("show");
+    form.querySelectorAll(".field").forEach(function (f) { f.classList.remove("invalid"); });
+    document.getElementById("name").focus();
+  });
+
+  /* ---------- Scroll reveal ---------- */
+  var reveals = document.querySelectorAll(".reveal");
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+    reveals.forEach(function (r) { io.observe(r); });
+  } else {
+    reveals.forEach(function (r) { r.classList.add("in"); });
+  }
+
+  /* ---------- Recompute open FAQ height on resize ---------- */
+  window.addEventListener("resize", function () {
+    var open = document.querySelector(".faq-item.open .faq-a");
+    if (open) open.style.maxHeight = open.scrollHeight + "px";
+  });
+})();
+</script>
+</body>
+</html>
