@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contest #002 — The Support-Inbox Gauntlet · unbiased.ai</title>
+<meta name="description" content="Four AIs answered the same 25-ticket support inbox. Every one cleared all 25. The bills range 5.7×.">
+<meta property="og:title" content="Four AIs cleared the same support inbox. One cost 5.7× the others.">
+<meta property="og:description" content="Same 25 tickets, four models, one shot each — a four-way tie on quality. The only thing that ranked them was price.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23101112'/%3E%3Cpath d='M16 7v18M9 12h14M10.5 12l-2.8 5.4a3.4 3.4 0 006.6 0L11.5 12M21.5 12l-2.8 5.4a3.4 3.4 0 006.6 0L22.5 12' stroke='%23FAFAF7' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAFAF7;--card:#FFFFFF;--ink:#101112;--body:#3D3F42;--muted:#71757C;--line:#E8E6E0;
+  --em:#0E9F6E;--em-deep:#0B7D57;--em-soft:#EAF7F1;--amber:#B45309;--amber-soft:#FBF4E9;
+  --r:14px;--shadow:0 1px 2px rgba(16,17,18,.04),0 8px 24px -12px rgba(16,17,18,.10);
+  --shadow-lift:0 2px 4px rgba(16,17,18,.05),0 20px 44px -16px rgba(16,17,18,.18);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:clip}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:'Space Grotesk',Inter,sans-serif;letter-spacing:-.025em;line-height:1.08}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+a{color:inherit}
+.rev{opacity:0;transform:translateY(10px);transition:opacity .55s ease,transform .55s ease}
+.rev.in{opacity:1;transform:none}
+
+header{position:sticky;top:0;z-index:50;background:rgba(250,250,247,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.hbar{display:flex;align-items:center;justify-content:space-between;height:60px}
+.mark{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16.5px}
+.mark .glyph{width:26px;height:26px;border-radius:7px;background:var(--ink);display:grid;place-items:center;flex:none}
+.hmeta{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted);font-weight:500}
+.pill{border:1px solid var(--line);border-radius:99px;padding:4px 12px;background:var(--card);white-space:nowrap}
+
+.hero{padding:60px 0 8px;position:relative}
+.hero::before{content:"";position:absolute;top:-30px;right:-40px;width:480px;height:440px;max-width:60vw;background:radial-gradient(closest-side,rgba(14,159,110,.11),transparent);pointer-events:none;z-index:-1}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--em-deep);margin-bottom:20px}
+.eyebrow::before{content:"";width:18px;height:1.5px;background:var(--em)}
+.hero h1{font-size:clamp(32px,4.6vw,54px);max-width:960px}
+.hero h1 .em{color:var(--em-deep)}
+.hero h1 .am{color:var(--amber)}
+.hero .dek{margin-top:20px;font-size:17px;color:var(--body);max-width:680px}
+
+.ticket{margin-top:30px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.ticket .tk-top{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);background:#FBFAF7}
+.ticket .tk-dot{width:9px;height:9px;border-radius:50%;background:var(--amber);flex:none}
+.ticket .tk-id{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);letter-spacing:.02em}
+.ticket .tk-sub{font-weight:700;font-size:14px;margin-left:auto}
+.ticket .tk-body{padding:18px 22px;font-size:14.5px;color:var(--body);line-height:1.65}
+.ticket .tk-body .who{font-weight:600;color:var(--ink)}
+
+.quiz{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s,border-color .2s;position:relative;cursor:pointer}
+.qcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift)}
+.qcard.guess{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink),var(--shadow)}
+.qcard.hi{border-color:var(--amber);box-shadow:0 0 0 2px var(--amber),var(--shadow-lift)}
+.qcard.lo{border-color:var(--em);box-shadow:0 0 0 2px var(--em),var(--shadow-lift)}
+.qhead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 15px;border-bottom:1px solid var(--line)}
+.qname{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:9px}
+.qname .lbl{width:24px;height:24px;border-radius:7px;background:#F1EFE9;color:var(--muted);display:grid;place-items:center;font-size:13px;font-weight:700}
+.qtag{font-size:9.5px;font-weight:800;letter-spacing:.05em;padding:4px 9px;border-radius:6px;color:#fff;opacity:0;transform:translateY(-2px);transition:opacity .35s,transform .35s}
+.qtag.show{opacity:1;transform:none}
+.qtag.amber{background:var(--amber)} .qtag.em{background:var(--em)}
+.qreply{padding:15px 17px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;line-height:1.7;color:#41474A;white-space:pre-wrap;flex:1;min-height:150px}
+.qfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 15px;border-top:1px solid #F1EFE9;background:#FCFBF8}
+.qcleared{font-size:11.5px;color:var(--muted);font-weight:600;opacity:0;transition:opacity .35s}
+.qcleared.show{opacity:1}
+.qcleared b{color:var(--em-deep)}
+.qprice{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:17px;color:var(--muted);letter-spacing:.06em}
+.qcard.revealed .qprice{letter-spacing:0}
+.quizbar{display:flex;align-items:center;gap:16px;margin-top:18px;flex-wrap:wrap}
+.revealbtn{background:var(--ink);color:#fff;border:none;border-radius:11px;padding:13px 22px;font:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:background .15s}
+.revealbtn:hover{background:#000}
+.revealbtn:disabled{opacity:.45;cursor:default}
+.punch{font-size:14px;color:var(--body);font-weight:500;line-height:1.5;max-width:560px}
+.punch b{color:var(--ink)}
+
+.sec{padding:72px 0 0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
+.stat .v{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:clamp(20px,2.2vw,26px)}
+.stat .l{font-size:12px;color:var(--muted);font-weight:500;margin-top:3px;min-height:2.5em}
+.stat .v.em{color:var(--em-deep)} .stat .v.am{color:var(--amber)}
+
+.gapgrid{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center;margin-top:24px}
+.gaptext h2{font-size:25px;margin-bottom:14px}
+.gaptext p{font-size:15px;color:var(--body);margin-bottom:12px}
+.gaptext .lede{font-weight:600;color:var(--ink)}
+.gaptext .pareto{margin-top:16px;border-left:3px solid var(--em);padding:4px 0 4px 16px;font-size:15px;color:var(--body)}
+.gaptext .pareto b{color:var(--em-deep)}
+.scalecard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-lift);padding:22px 24px}
+.scalecard .sc-t{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:13px}
+.seg{display:inline-flex;background:#F1EFE9;border-radius:10px;padding:3px;gap:2px;margin-bottom:16px}
+.seg button{border:none;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--muted);padding:7px 13px;border-radius:8px;cursor:pointer;transition:color .15s}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.09)}
+.sc-row{display:flex;align-items:baseline;justify-content:space-between;padding:8px 0}
+.sc-row .k{font-size:13.5px;color:var(--body)}
+.sc-row .v{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:19px}
+.sc-gap{margin-top:12px;padding-top:16px;border-top:1px solid var(--line)}
+.sc-gap .lbl{font-size:12px;color:var(--muted);font-weight:600}
+.sc-gap .big{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:clamp(30px,4vw,40px);color:var(--em-deep);letter-spacing:-.02em;line-height:1.04;margin-top:3px}
+.sc-gap .yr{font-size:13px;color:var(--muted);margin-top:4px}
+.sc-foot{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.55}
+
+.sechead{max-width:720px;margin-bottom:24px}
+.sechead .k{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--em-deep);margin-bottom:10px}
+.sechead h2{font-size:clamp(23px,3vw,30px);margin-bottom:12px}
+.sechead p{font-size:15px;color:var(--body)}
+
+.board{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px 26px}
+.brow{display:grid;grid-template-columns:120px 1fr 92px;align-items:center;gap:16px;padding:11px 0;border-bottom:1px solid #F1EFE9}
+.brow:last-child{border-bottom:none}
+.brow .bk{font-weight:700;font-size:14px;display:flex;align-items:center;gap:9px}
+.brow .bk .lbl{width:24px;height:24px;border-radius:7px;background:#F1EFE9;color:var(--muted);display:grid;place-items:center;font-size:12.5px;font-weight:700}
+.btrack{height:14px;background:#F1EFE9;border-radius:99px;overflow:hidden;position:relative}
+.bfill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--em),var(--em-deep));width:0;transition:width 1s cubic-bezier(.22,1,.36,1)}
+.brow.in .bfill{width:calc(var(--s)*1%)}
+.bval{text-align:right;font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:16px}
+.bval small{font-size:11px;color:var(--muted);font-weight:500}
+.board .bnote{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.55}
+
+.spot{margin-top:24px}
+.tabs{display:inline-flex;background:#F1EFE9;border-radius:11px;padding:3px;gap:2px;margin-bottom:18px;flex-wrap:wrap}
+.tabs button{border:none;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;transition:color .15s}
+.tabs button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.09)}
+.spanel{display:none}
+.spanel.on{display:block}
+.sp-ctx{background:#FBFAF7;border:1px solid var(--line);border-radius:var(--r);padding:15px 18px;margin-bottom:16px;font-size:13.5px;color:var(--body);line-height:1.6}
+.sp-ctx b{color:var(--ink)}
+.sp-ctx .rule{display:inline-block;margin-top:8px;font-size:12px;color:var(--em-deep);font-weight:600}
+.spgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.spr{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.spr .sh{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line)}
+.spr .sh .lbl{width:22px;height:22px;border-radius:6px;background:#F1EFE9;color:var(--muted);display:grid;place-items:center;font-size:12px;font-weight:700}
+.spr .sh .pr{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:13.5px;color:var(--body)}
+.spr .body{padding:14px 16px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;line-height:1.7;color:#41474A;white-space:pre-wrap;flex:1}
+
+.verdict{display:grid;grid-template-columns:1.12fr 1fr;gap:0;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.vleft{padding:30px 32px;border-right:1px solid var(--line)}
+.vleft h2{font-size:24px;margin-bottom:14px}
+.vleft p{font-size:14.5px;color:var(--body);margin-bottom:12px}
+.vleft .kicker{font-weight:700;color:var(--ink)}
+.vright{padding:30px 32px;display:flex;flex-direction:column}
+.vright .t{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:left;padding:0 8px 9px;border-bottom:1px solid var(--line);font-weight:600}
+th.r,td.r{text-align:right}
+td{padding:11px 8px;border-bottom:1px solid #F1EFE9;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+td .tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.08em;border-radius:5px;padding:2px 7px;margin-left:7px;vertical-align:1px}
+td .tag.lo{background:var(--em-soft);color:var(--em-deep)}
+td .tag.hi{background:var(--amber-soft);color:var(--amber)}
+.fine{font-size:11.5px;color:var(--muted);margin-top:auto;padding-top:14px;line-height:1.6}
+
+.answer{margin-top:24px;background:linear-gradient(180deg,var(--em-soft),#F5FBF8);border:1px solid #CBEBDD;border-radius:18px;padding:34px 36px;position:relative;overflow:hidden}
+.answer::after{content:"";position:absolute;right:-90px;bottom:-90px;width:280px;height:280px;border-radius:50%;background:radial-gradient(closest-side,rgba(14,159,110,.18),transparent)}
+.answer .k{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--em-deep);margin-bottom:12px}
+.answer h2{font-size:clamp(24px,3.2vw,32px);max-width:760px;position:relative;z-index:1}
+.answer h2 .em{color:var(--em-deep)}
+.answer p{font-size:15.5px;color:var(--body);max-width:680px;margin-top:14px;position:relative;z-index:1}
+.answer p b{color:var(--ink)}
+
+.method{margin-top:24px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.mcell{border:1px dashed var(--line);border-radius:var(--r);padding:16px 18px;background:rgba(255,255,255,.5)}
+.mcell h4{font-size:12.5px;font-weight:700;margin-bottom:5px}
+.mcell p{font-size:12px;color:var(--muted);line-height:1.6}
+
+.cta{background:var(--ink);border-radius:18px;color:#fff;padding:52px 48px;margin:76px 0 0;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px;position:relative;overflow:hidden}
+.cta::after{content:"";position:absolute;right:-120px;top:-120px;width:340px;height:340px;border-radius:50%;background:radial-gradient(closest-side,rgba(14,159,110,.35),transparent)}
+.cta h2{font-size:28px;max-width:540px;position:relative;z-index:1}
+.cta p{color:#ABAEA9;font-size:14.5px;margin-top:10px;max-width:520px;position:relative;z-index:1}
+.btns{display:flex;gap:12px;flex-wrap:wrap;position:relative;z-index:1}
+.btn{display:inline-block;padding:14px 24px;border-radius:11px;font-weight:600;font-size:15px;text-decoration:none}
+.btn.primary{background:var(--em);color:#fff}
+.btn.primary:hover{background:var(--em-deep)}
+.btn.ghost{border:1px solid #3A3B3D;color:#fff}
+.btn.ghost:hover{border-color:#5A5B5D}
+footer{margin-top:48px;padding:26px 0 54px;color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;border-top:1px solid var(--line)}
+footer a{color:var(--em-deep);text-decoration:none;font-weight:600}
+footer a:hover{text-decoration:underline}
+
+@media(max-width:1020px){.stats{grid-template-columns:repeat(2,1fr)}.method{grid-template-columns:repeat(2,1fr)}.verdict{grid-template-columns:1fr}.vleft{border-right:none;border-bottom:1px solid var(--line)}.gapgrid{grid-template-columns:1fr;gap:26px}}
+@media(max-width:640px){.quiz{grid-template-columns:1fr;gap:12px}.spgrid{grid-template-columns:1fr}.qname{font-size:13px}.qprice{font-size:15px}.hmeta .pill.date{display:none}.hero{padding-top:48px}.hero::before{display:none}.cta{padding:38px 26px}.method{grid-template-columns:1fr}.vleft,.vright{padding:24px 20px}.scalecard{padding:20px}.board{padding:18px 16px}.brow{grid-template-columns:88px 1fr 76px;gap:10px}.ticket .tk-sub{display:none}.answer{padding:28px 22px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap hbar">
+    <div class="mark"><span class="glyph"><svg width="16" height="16" viewBox="0 0 32 32" fill="none"><path d="M16 7v18M9 12h14M10.5 12l-2.8 5.4a3.4 3.4 0 006.6 0L11.5 12M21.5 12l-2.8 5.4a3.4 3.4 0 006.6 0L22.5 12" stroke="#FAFAF7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>unbiased.ai</div>
+    <div class="hmeta"><span class="pill">Contest #002</span><span class="pill date">Ran 2026-07-04</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+<section class="hero">
+  <div class="eyebrow">Contest #002 · One inbox · 25 tickets · Four leading models</div>
+  <h1>The <span class="em">$0.03</span> inbox vs the <span class="am">$0.17</span> inbox —<br>and not a single ticket apart.</h1>
+  <p class="dek">Four AIs worked the same 25-ticket support queue for CloudCanvas — refunds, a legal threat, a GDPR deletion, replies owed in Spanish, German and Japanese. Every one cleared all 25. We stripped the labels. Below is the hardest ticket in the stack: a legal threat that must be escalated, never argued. Read the four replies, guess which run cost <b>5.7× the most</b>, then reveal the receipts.</p>
+
+  <div class="ticket rev">
+    <div class="tk-top"><span class="tk-dot"></span><span class="tk-id">TICKET #9 · legal · priority: high</span><span class="tk-sub">Spotlight: the legal threat</span></div>
+    <div class="tk-body"><span class="who">From: a customer's attorney —</span> "My client has suffered damages due to your platform's downtime and we are prepared to pursue legal action. I expect a full accounting and compensation. Respond within 48 hours." <em>Policy: acknowledge receipt, escalate to legal@cloudcanvas.com, do not discuss the substance, admit no fault.</em></div>
+  </div>
+
+  <div class="quiz" id="quiz">
+    <div class="qcard" data-key="a" data-cost="0.0820" data-cleared="25">
+      <div class="qhead"><span class="qname"><span class="lbl">A</span>Reply A</span><span class="qtag"></span></div>
+      <div class="qreply">We’ve received your message. Because it includes a legal claim and references potential legal action, we have escalated it to legal@cloudcanvas.com.
+
+We won’t discuss the substance of the claim in this support thread.
+
+Regards,
+CloudCanvas Support</div>
+      <div class="qfoot"><span class="qcleared"></span><span class="qprice">$•.••••</span></div>
+    </div>
+    <div class="qcard" data-key="b" data-cost="0.1719" data-cleared="25">
+      <div class="qhead"><span class="qname"><span class="lbl">B</span>Reply B</span><span class="qtag"></span></div>
+      <div class="qreply">Hello,
+
+Thank you for your message. We confirm it has been received, and because it references potential legal action, it has been escalated to our legal team at legal@cloudcanvas.com. They will handle all further communication on this matter.
+
+We are not able to discuss the substance of the claim through this support channel.
+
+Regards,
+CloudCanvas Support</div>
+      <div class="qfoot"><span class="qcleared"></span><span class="qprice">$•.••••</span></div>
+    </div>
+    <div class="qcard" data-key="c" data-cost="0.0303" data-cleared="25">
+      <div class="qhead"><span class="qname"><span class="lbl">C</span>Reply C</span><span class="qtag"></span></div>
+      <div class="qreply">Hello,
+
+Thank you for your message. We have received your communication and have escalated it to our legal team at legal@cloudcanvas.com for their review. They will follow up with you directly.
+
+We are not able to discuss the substance of your claim through this support channel.
+
+Best regards,
+CloudCanvas Support</div>
+      <div class="qfoot"><span class="qcleared"></span><span class="qprice">$•.••••</span></div>
+    </div>
+    <div class="qcard" data-key="d" data-cost="0.0939" data-cleared="25">
+      <div class="qhead"><span class="qname"><span class="lbl">D</span>Reply D</span><span class="qtag"></span></div>
+      <div class="qreply">Thank you for your message. We have received it, and because it references potential legal action and damages, I’ve escalated it to our legal team at legal@cloudcanvas.com, who will follow up with you directly. Out of respect for that process, I won’t discuss the substance of the claim here. Any further correspondence on this matter should go to legal@cloudcanvas.com.</div>
+      <div class="qfoot"><span class="qcleared"></span><span class="qprice">$•.••••</span></div>
+    </div>
+  </div>
+  <div class="quizbar"><button class="revealbtn" id="revealBtn">Reveal the bills →</button><span class="punch" id="punch">All four escalate cleanly and admit no fault — a textbook pass. Guess which run cost the most, then reveal.</span></div>
+</section>
+
+<section class="sec" id="gap">
+  <div class="stats rev">
+    <div class="stat"><div class="v em num" data-settle="0.0303" data-prefix="$" data-dp="4">$0.0303</div><div class="l">Cheapest run — the whole 25-ticket inbox</div></div>
+    <div class="stat"><div class="v am num" data-settle="0.1719" data-prefix="$" data-dp="4">$0.1719</div><div class="l">Priciest run — same 25 tickets</div></div>
+    <div class="stat"><div class="v num">5.7×</div><div class="l">Price gap, for a four-way tie on quality</div></div>
+    <div class="stat"><div class="v em num">25 / 25</div><div class="l">Tickets cleared — by every model in the field</div></div>
+  </div>
+  <div class="gapgrid rev">
+    <div class="gaptext">
+      <h2>A four-way tie on quality. A 5.7× spread on the bill.</h2>
+      <p class="lede">Every model cleared all 25 tickets — the refund denials, the legal escalation, the GDPR deletion, the German double-charge, replies owed in three languages. Nobody fabricated an invoice. Nobody caved on policy.</p>
+      <p>So the answer isn't in the replies — you can't tell them apart. It's on the invoice. One inbox cost six cents on the cheapest route and seventeen on the priciest, for work a grader scored identically. Most teams are hard-coded to the expensive end and never notice.</p>
+      <div class="pareto"><b>That's what Pareto fixes.</b> It routes every ticket to the cheapest model that clears your quality bar, and hands you one endpoint you never think about. You keep the result and pay the low number.</div>
+    </div>
+    <div class="scalecard">
+      <div class="sc-t">A support desk at real volume</div>
+      <div class="seg" id="seg">
+        <button data-v="10000">10K tix/mo</button>
+        <button data-v="100000" class="on">100K tix/mo</button>
+        <button data-v="500000">500K tix/mo</button>
+      </div>
+      <div class="sc-row"><span class="k">Hard-coded to the priciest model</span><span class="v num am" id="scHigh" style="color:var(--amber)">$687</span></div>
+      <div class="sc-row"><span class="k">Routed to the cheapest that clears the bar</span><span class="v num" id="scLow" style="color:var(--em-deep)">$121</span></div>
+      <div class="sc-gap"><span class="lbl">You'd save — for replies a grader can't tell apart</span><div class="big num" id="scGap">$566/mo</div><div class="yr num" id="scYr">$6,797 a year</div></div>
+      <div class="sc-foot">Per-ticket cost (run ÷ 25) × monthly volume. Illustrative — one desk, one prompt; your real mix varies. Measuring that mix is exactly what the free audit does.</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sechead rev">
+    <div class="k">The scoreboard</div>
+    <h2>Tickets cleared, out of 25</h2>
+    <p>A ticket clears only if every criterion is met — right policy call, no fabricated facts, correct language, no forbidden exclamation marks. Four bars, all the way to the wall.</p>
+  </div>
+  <div class="board rev" id="board">
+    <div class="brow" style="--s:100"><span class="bk"><span class="lbl">A</span>Reply A</span><span class="btrack"><span class="bfill"></span></span><span class="bval num">25<small>/25</small></span></div>
+    <div class="brow" style="--s:100"><span class="bk"><span class="lbl">B</span>Reply B</span><span class="btrack"><span class="bfill"></span></span><span class="bval num">25<small>/25</small></span></div>
+    <div class="brow" style="--s:100"><span class="bk"><span class="lbl">C</span>Reply C</span><span class="btrack"><span class="bfill"></span></span><span class="bval num">25<small>/25</small></span></div>
+    <div class="brow" style="--s:100"><span class="bk"><span class="lbl">D</span>Reply D</span><span class="btrack"><span class="bfill"></span></span><span class="bval num">25<small>/25</small></span></div>
+    <div class="bnote">Perfect four-way tie. The traps caught no one: T2 (outside-window refund) denied without inventing an exception, T24 (usage overage) held as non-refundable, T7 (German double-charge) investigated rather than fabricated, T14 (GDPR) confirmed deletion within 30 days with a DPA reference.</div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sechead rev">
+    <div class="k">Two more spotlight tickets</div>
+    <h2>Same traps. Same blind labels. Read them side by side.</h2>
+    <p>Ticket #2 is a refund demand that policy says to deny — the tempting wrong answer is to invent an exception. Ticket #6 must be answered in Spanish with the exact export path. Switch tabs; the labels stay withheld.</p>
+  </div>
+  <div class="spot rev">
+    <div class="tabs" id="spotTabs">
+      <button class="on" data-t="t2">Ticket #2 · deny the refund</button>
+      <button data-t="t6">Ticket #6 · reply in Spanish</button>
+    </div>
+
+    <div class="spanel on" data-p="t2">
+      <div class="sp-ctx"><b>Ticket #2 —</b> "I just noticed I've been charged for months. I want a full refund of everything." Team plan, billed monthly, first charge ~4 months ago. <span class="rule">Correct call: deny — outside the 30-day monthly window — without inventing an exception, and admit no fault.</span></div>
+      <div class="spgrid">
+        <div class="spr"><div class="sh"><span class="lbl">A</span><span class="pr">$0.0820</span></div><div class="body">Hi Priya,
+
+Thanks for reaching out. Self-serve monthly plans are eligible for a full refund within 30 days of each charge. Charges from about 4 months ago are outside that refund window, so we can’t refund all past charges.
+
+If you have a recent monthly charge from within the last 30 days, we can review that for refund eligibility and help cancel the subscription so there are no further renewals.
+
+Best,
+CloudCanvas Support</div></div>
+        <div class="spr"><div class="sh"><span class="lbl">B</span><span class="pr">$0.1719</span></div><div class="body">Hi Priya,
+
+Thanks for writing in, and I'm sorry for the surprise on your statement.
+
+Our refund policy for self-serve monthly plans covers charges made within the last 30 days. That means the earlier months are outside the refund window and I'm not able to refund those. However, if your most recent monthly charge was within the last 30 days, that one is eligible — just confirm and I'll process a full refund of that charge right away.
+
+I can also cancel the subscription now so no further charges occur. Would you like me to do that?
+
+Best,
+CloudCanvas Support</div></div>
+        <div class="spr"><div class="sh"><span class="lbl">C</span><span class="pr">$0.0303</span></div><div class="body">Hi Priya,
+
+Thank you for reaching out, and I understand the frustration of realizing you've been subscribed longer than intended.
+
+Our refund policy for self-serve monthly plans covers a full refund within 30 days of the charge. Since your subscription began approximately four months ago, the charges fall outside that window, and I'm not able to issue a refund.
+
+I'd be happy to cancel your Team plan so you aren't charged again going forward. You'll retain access through the end of your current billing period. Just let me know if you'd like me to proceed.
+
+Best,
+CloudCanvas Support</div></div>
+        <div class="spr"><div class="sh"><span class="lbl">D</span><span class="pr">$0.0939</span></div><div class="body">Hi Priya, thanks for writing in, and I understand the frustration of a charge you'd lost track of. Here's where things stand: our refund window for monthly plans is 30 days from each charge. Since your first charge was about four months ago, I'm not able to refund the full history of charges. I can refund the most recent charge if it falls within the last 30 days, and I'll cancel the subscription right away so you aren't billed again going forward. Just confirm you'd like me to cancel and I'll take care of it. I'm sorry for the inconvenience here.</div></div>
+      </div>
+    </div>
+
+    <div class="spanel" data-p="t6">
+      <div class="sp-ctx"><b>Ticket #6 —</b> "¿Cómo exporto un tablero a PDF? Llevo dos días intentándolo." <span class="rule">Correct call: answer in Spanish; export path is Share (top-right) › Export › choose PDF; promise no timeline.</span></div>
+      <div class="spgrid">
+        <div class="spr"><div class="sh"><span class="lbl">A</span><span class="pr">$0.0820</span></div><div class="body">Hola Lucía,
+
+Claro. Para exportar un tablero:
+
+1. Abre el tablero.
+2. Haz clic en “Share” en la esquina superior derecha.
+3. Selecciona “Export”.
+4. Elige el formato PDF.
+
+También puedes exportar en PNG o SVG desde el mismo menú.
+
+Saludos,
+Soporte de CloudCanvas</div></div>
+        <div class="spr"><div class="sh"><span class="lbl">B</span><span class="pr">$0.1719</span></div><div class="body">Hola Lucía:
+
+Gracias por escribirnos, y lamento la frustración de estos dos días.
+
+Exportar un tablero a PDF es sencillo: abre el tablero, haz clic en "Share" (Compartir) en la esquina superior derecha, elige "Export" (Exportar) y selecciona PDF. También puedes exportar en PNG o SVG desde el mismo menú.
+
+Si no ves la opción o algo falla al exportar, avísanos y lo revisamos contigo.
+
+Un saludo,
+Soporte de CloudCanvas</div></div>
+        <div class="spr"><div class="sh"><span class="lbl">C</span><span class="pr">$0.0303</span></div><div class="body">Hola Lucía,
+
+Para exportar un tablero, abre el tablero que deseas exportar, haz clic en el botón "Share" en la esquina superior derecha, elige "Export" y luego selecciona el formato que prefieras: PNG, SVG o PDF.
+
+Si tienes alguna otra pregunta, no dudes en contactarnos.
+
+Saludos cordiales,
+El equipo de CloudCanvas</div></div>
+        <div class="spr"><div class="sh"><span class="lbl">D</span><span class="pr">$0.0939</span></div><div class="body">Hola Lucía, gracias por escribir. Con gusto te ayudo a exportar tu tablero a PDF. Los pasos son: abre el tablero, haz clic en Compartir (Share) en la parte superior derecha, elige Exportar (Export) y luego selecciona el formato PDF (también puedes elegir PNG o SVG). Con eso deberías poder descargar tu tablero sin problema. Si la opción sigue sin aparecer después de abrir Compartir, avísame y lo revisamos contigo. Un saludo.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="verdict rev">
+    <div class="vleft">
+      <h2>The verdict</h2>
+      <p><span class="kicker">All four cleared the inbox.</span> Every refund call correct, every policy trap held, three languages handled, no fabricated invoices, no forbidden exclamation marks. On the grader it's a 25/25 four-way tie — which is exactly why we hid the labels.</p>
+      <p>So the only thing that ranks them is the bill, and the bill ranges <b>5.7×</b>. Four inboxes you genuinely can't rank by quality, priced from three cents to seventeen.</p>
+      <p>Pick by brand and you're gambling with your budget. Pick <b>the cheapest that still clears the bar</b> — which is all routing is — and you keep the result while cutting the bill to a fraction. "We'll send you to whatever's cheapest that works" is a sentence no single lab can say. We can.</p>
+    </div>
+    <div class="vright">
+      <div class="t">The receipts</div>
+      <p style="font-size:12px;color:var(--muted);margin:-6px 0 14px;line-height:1.5">All four cleared 25/25 — so this is a pure price race. One full 25-ticket run, one shot each.</p>
+      <table>
+        <thead><tr><th>Reply</th><th class="r">Cost / inbox</th><th class="r">vs cheapest</th></tr></thead>
+        <tbody>
+          <tr><td><b>Reply C</b><span class="tag lo">CHEAPEST</span></td><td class="r num" style="color:var(--em-deep);font-weight:700">$0.0303</td><td class="r num">1×</td></tr>
+          <tr><td><b>Reply A</b></td><td class="r num">$0.0820</td><td class="r num">2.7×</td></tr>
+          <tr><td><b>Reply D</b></td><td class="r num">$0.0939</td><td class="r num">3.1×</td></tr>
+          <tr><td><b>Reply B</b><span class="tag hi">PRICIEST</span></td><td class="r num" style="color:var(--amber);font-weight:700">$0.1719</td><td class="r num">5.7×</td></tr>
+        </tbody>
+      </table>
+      <p class="fine">Four leading models ran this inbox — Claude Fable 5, Claude Opus 4.8, GPT-5.5, and one more. We're not telling you which is which, because you couldn't tell either. That's the point.</p>
+    </div>
+  </div>
+
+  <div class="answer rev">
+    <div class="k">The answer</div>
+    <h2>The answer isn't picking a model. It's <span class="em">routing</span> to the cheapest one that clears the bar.</h2>
+    <p>Every model in this contest cleared all 25 tickets — including the one that did it at <b>1/5.7 the cost</b> of the priciest. Lock yourself to a single frontier vendor and you pay the top of that range on every ticket, forever. <b>Pareto sends each request to the cheapest model that still passes your quality bar</b>, proves it against the grader, and gives you one endpoint. You stop choosing. You just stop overpaying.</p>
+  </div>
+
+  <div class="method rev">
+    <div class="mcell"><h4>One shot each</h4><p>Identical 25-ticket inbox, same system prompt, no cherry-picking. Each reply is exactly what the model returned.</p></div>
+    <div class="mcell"><h4>Graded on the rules</h4><p>A ticket clears only if every criterion is met — right policy call, correct language, no fabricated facts, no forbidden exclamation marks. All four cleared 25/25.</p></div>
+    <div class="mcell"><h4>Real bills</h4><p>Fable/Opus: delivered output chars ÷ 4 × published rate ($50/M out Fable, $25/M Opus). GPT-5.5 and the GLM route: real usage tokens at their at-cost gateway rates.</p></div>
+    <div class="mcell"><h4>Labels withheld on purpose</h4><p>We don't map model to letter. If quality were the differentiator you'd spot the expensive one. You can't — so it isn't.</p></div>
+  </div>
+  <p class="rev" style="font-size:11.5px;color:var(--muted);margin-top:16px;line-height:1.6;max-width:820px">Ran 2026-07-04 · Two models ran as Claude agent runs via the Anthropic API; GPT-5.5 and one more ran through our at-cost gateway. Same prompt, one shot each.</p>
+</section>
+
+<section class="cta rev">
+  <div>
+    <h2>Send us your AI bill.</h2>
+    <p>We route every call to the cheapest model that clears your quality bar — and prove it nightly. What you spent, what you'd have spent, receipts attached.</p>
+  </div>
+  <div class="btns">
+    <a class="btn primary" href="mailto:hello@unbiased.ai?subject=Send%20us%20our%20AI%20bill">Send us your AI bill</a>
+    <a class="btn ghost" href="mailto:hello@unbiased.ai?subject=Run%20the%20inbox%20gauntlet%20on%20our%20stack">Or run this inbox on your stack</a>
+  </div>
+</section>
+
+<nav class="series" aria-label="The Contest Series" style="max-width:1080px;margin:44px auto 0;padding:14px 20px;background:var(--card);border:1px solid var(--line);border-radius:14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;font-size:12.5px">
+  <span style="font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-size:11px">The Contest Series</span>
+  <a href="/unbiased-contest/" style="color:var(--muted);text-decoration:none;font-weight:500">#001 Landing Page</a>
+  <span style="color:var(--ink);font-weight:600">#002 Support Inbox</span>
+  <a href="/unbiased-contest/003/" style="color:var(--muted);text-decoration:none;font-weight:500">#003 Extraction</a>
+  <a href="/unbiased-contest/004/" style="color:var(--muted);text-decoration:none;font-weight:500">#004 Bill Teardown</a>
+  <a href="/unbiased-contest/005/" style="color:var(--muted);text-decoration:none;font-weight:500">#005 Dashboard</a>
+</nav>
+
+<footer>
+  <span><b style="color:var(--ink)">unbiased.ai</b> · Loyal to your bill.</span>
+  <span>Contest #002 · Ran 2026-07-04 · <a href="https://bougie-atxp.github.io/unbiased-contest/">Contest #001 ↗</a></span>
+</footer>
+</main>
+
+<script>
+const ro=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll('.rev').forEach(el=>ro.observe(el));
+const so=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;so.unobserve(e.target);
+  const el=e.target,v=parseFloat(el.dataset.settle),dp=+el.dataset.dp,pre=el.dataset.prefix||'';
+  const t0=performance.now(),dur=900,from=v*.62;
+  const step=t=>{const p=Math.min(1,(t-t0)/dur),ease=1-Math.pow(1-p,3);el.textContent=pre+(from+(v-from)*ease).toFixed(dp);if(p<1)requestAnimationFrame(step)};
+  requestAnimationFrame(step);}),{threshold:.6});
+document.querySelectorAll('[data-settle]').forEach(el=>so.observe(el));
+
+// scoreboard bar fill on scroll
+const bo=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');bo.unobserve(e.target)}}),{threshold:.5});
+document.querySelectorAll('.brow').forEach(el=>bo.observe(el));
+
+// blind quiz
+(function(){
+  const quiz=document.getElementById('quiz'); if(!quiz) return;
+  const cards=[...quiz.querySelectorAll('.qcard')], punch=document.getElementById('punch'), btn=document.getElementById('revealBtn');
+  let guess=null, done=false;
+  cards.forEach(c=>c.addEventListener('click',()=>{ if(done) return; cards.forEach(x=>x.classList.remove('guess')); c.classList.add('guess'); guess=c.dataset.key; punch.innerHTML='Locked in <b>Reply '+c.dataset.key.toUpperCase()+'</b>. Now reveal the bills →'; }));
+  btn.addEventListener('click',()=>{
+    if(done) return; done=true;
+    cards.forEach(c=>{ c.classList.add('revealed'); const p=c.querySelector('.qprice'); p.textContent='$'+parseFloat(c.dataset.cost).toFixed(4); p.style.color='var(--ink)';
+      const cl=c.querySelector('.qcleared'); cl.innerHTML='<b>'+c.dataset.cleared+'/25</b> cleared'; cl.classList.add('show'); });
+    const hi=cards.find(c=>c.dataset.key==='b'), lo=cards.find(c=>c.dataset.key==='c');
+    hi.classList.add('hi'); lo.classList.add('lo');
+    const ht=hi.querySelector('.qtag'); ht.textContent='PRICIEST'; ht.classList.add('show','amber'); hi.querySelector('.qprice').style.color='var(--amber)';
+    const lt=lo.querySelector('.qtag'); lt.textContent='CHEAPEST · 5.7× LESS'; lt.classList.add('show','em'); lo.querySelector('.qprice').style.color='var(--em-deep)';
+    punch.innerHTML = guess==='b'
+      ? 'Sharp eye — <b>Reply B ($0.17)</b> ran up the biggest bill, 5.7× Reply C. But be honest: could you tell by <i>reading</i>? All four cleared 25/25.'
+      : (guess ? 'Most can’t. <b>Reply B ($0.17)</b> cost 5.7× <b>Reply C ($0.03)</b> — and both cleared all 25 tickets. That gap is pure waste.'
+               : '<b>Reply B ($0.17)</b> cost 5.7× <b>Reply C ($0.03)</b> — for inboxes that both cleared 25/25. That gap is pure waste.');
+    btn.disabled=true; btn.textContent='Bills revealed';
+  });
+})();
+
+// spotlight tabs
+(function(){
+  const tabs=document.getElementById('spotTabs'); if(!tabs) return;
+  const panels=[...document.querySelectorAll('.spanel')];
+  tabs.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    [...tabs.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');
+    panels.forEach(p=>p.classList.toggle('on',p.dataset.p===b.dataset.t));});
+})();
+
+// scale card: priciest vs cheapest per-ticket at volume
+(function(){
+  const seg=document.getElementById('seg'); if(!seg) return;
+  const HI=0.1719/25, LO=0.0303/25, fmt=n=>'$'+Math.round(n).toLocaleString('en-US');
+  const set=v=>{document.getElementById('scHigh').textContent=fmt(HI*v);document.getElementById('scLow').textContent=fmt(LO*v);const g=(HI-LO)*v;document.getElementById('scGap').textContent=fmt(g)+'/mo';document.getElementById('scYr').textContent=fmt(g*12)+' a year';};
+  seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...seg.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');set(+b.dataset.v);});
+  set(100000);
+})();
+</script>
+</body>
+</html>

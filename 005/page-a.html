@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Northwind Analytics — Dashboard</title>
+<style>
+  :root {
+    --bg: #f4f6fa;
+    --panel: #ffffff;
+    --panel-2: #fbfcfe;
+    --ink: #0f1728;
+    --ink-soft: #4a5568;
+    --ink-faint: #8a94a6;
+    --line: #e6eaf1;
+    --accent: #4f6bff;
+    --accent-soft: rgba(79,107,255,0.12);
+    --green: #17a673;
+    --green-soft: rgba(23,166,115,0.12);
+    --red: #e5484d;
+    --red-soft: rgba(229,72,77,0.12);
+    --amber: #f5a524;
+    --grid: rgba(15,23,40,0.06);
+    --shadow: 0 1px 3px rgba(16,24,40,0.06), 0 8px 28px rgba(16,24,40,0.06);
+    --radius: 16px;
+  }
+  html[data-theme="dark"] {
+    --bg: #0b0f17;
+    --panel: #131926;
+    --panel-2: #0f1420;
+    --ink: #eef2f8;
+    --ink-soft: #aeb8c8;
+    --ink-faint: #6b7690;
+    --line: #22293a;
+    --accent: #7d92ff;
+    --accent-soft: rgba(125,146,255,0.16);
+    --green: #34d399;
+    --green-soft: rgba(52,211,153,0.14);
+    --red: #ff6b6f;
+    --red-soft: rgba(255,107,111,0.14);
+    --amber: #fbbf47;
+    --grid: rgba(255,255,255,0.06);
+    --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.45);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.45;
+    transition: background .35s ease, color .35s ease;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 22px 18px 60px; }
+  .tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+  header.top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 40px; height: 40px; border-radius: 11px;
+    background: linear-gradient(135deg, var(--accent), #9b6bff);
+    display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 19px;
+    box-shadow: 0 6px 18px var(--accent-soft);
+  }
+  .brand h1 { font-size: 18px; margin: 0; letter-spacing: -0.02em; }
+  .brand p { margin: 0; font-size: 12.5px; color: var(--ink-faint); }
+  .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .seg {
+    display: inline-flex; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 11px; padding: 3px; box-shadow: var(--shadow);
+  }
+  .seg button {
+    border: 0; background: transparent; color: var(--ink-soft);
+    font-size: 13px; font-weight: 600; padding: 7px 13px; border-radius: 8px;
+    cursor: pointer; transition: all .2s ease; font-variant-numeric: tabular-nums;
+  }
+  .seg button.active { background: var(--accent); color: #fff; box-shadow: 0 4px 12px var(--accent-soft); }
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 11px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--ink); cursor: pointer; font-size: 17px;
+    display: grid; place-items: center; box-shadow: var(--shadow); transition: transform .15s ease;
+  }
+  .icon-btn:active { transform: scale(0.92); }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+  .kpi {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 16px 15px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+    opacity: 0; transform: translateY(10px); animation: rise .5s ease forwards;
+  }
+  .kpi:nth-child(1){animation-delay:.04s}.kpi:nth-child(2){animation-delay:.1s}
+  .kpi:nth-child(3){animation-delay:.16s}.kpi:nth-child(4){animation-delay:.22s}
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+  .kpi .label { font-size: 12px; color: var(--ink-faint); font-weight: 600; letter-spacing: .01em; text-transform: uppercase; }
+  .kpi .val { font-size: 27px; font-weight: 800; letter-spacing: -0.03em; margin: 7px 0 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+  .chip.up { color: var(--green); background: var(--green-soft); }
+  .chip.down { color: var(--red); background: var(--red-soft); }
+  .chip .sub { color: var(--ink-faint); font-weight: 500; margin-left: 2px; }
+
+  .insight {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: linear-gradient(120deg, var(--accent-soft), transparent 70%);
+    border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    border-radius: var(--radius); padding: 15px 17px; margin-bottom: 18px; box-shadow: var(--shadow);
+  }
+  .insight .ib { font-size: 22px; line-height: 1; }
+  .insight h3 { margin: 0 0 3px; font-size: 14px; letter-spacing: -0.01em; }
+  .insight p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+  .insight b { color: var(--ink); }
+
+  .grid-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 16px 10px; box-shadow: var(--shadow);
+  }
+  .card.wide { grid-column: 1 / -1; }
+  .card h2 { font-size: 14.5px; margin: 0 0 2px; letter-spacing: -0.01em; }
+  .card .csub { font-size: 12px; color: var(--ink-faint); margin: 0 0 8px; }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--ink-soft); align-items: center; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+  .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .chart-box { width: 100%; }
+  canvas { width: 100%; display: block; touch-action: none; }
+
+  footer.foot { text-align: center; color: var(--ink-faint); font-size: 12px; margin-top: 26px; }
+
+  @media (max-width: 900px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .grid-charts { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 420px) {
+    .wrap { padding: 16px 12px 48px; }
+    .kpis { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .kpi .val { font-size: 22px; }
+    .brand h1 { font-size: 16px; }
+    .seg button { padding: 6px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">N</div>
+      <div>
+        <h1>Northwind Analytics</h1>
+        <p>Revenue &amp; growth dashboard · Jul 2024 – Jun 2026</p>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="seg" id="range">
+        <button data-r="6">6M</button>
+        <button data-r="12" class="active">12M</button>
+        <button data-r="24">All</button>
+      </div>
+      <button class="icon-btn" id="theme" title="Toggle theme">🌙</button>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="insight" id="insight">
+    <div class="ib">💡</div>
+    <div>
+      <h3 id="ins-title">Insight</h3>
+      <p id="ins-body"></p>
+    </div>
+  </div>
+
+  <div class="grid-charts">
+    <div class="card wide">
+      <div class="card-head">
+        <div>
+          <h2>Monthly Recurring Revenue</h2>
+          <p class="csub" id="mrr-sub">Cumulative MRR over the selected window</p>
+        </div>
+        <div class="legend"><span><i class="dot" style="background:var(--accent)"></i>MRR (USD)</span></div>
+      </div>
+      <div class="chart-box"><canvas id="c-mrr"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div><h2>New vs Churned Customers</h2><p class="csub">Monthly gross adds and losses</p></div>
+        <div class="legend">
+          <span><i class="dot" style="background:var(--green)"></i>New</span>
+          <span><i class="dot" style="background:var(--red)"></i>Churned</span>
+        </div>
+      </div>
+      <div class="chart-box"><canvas id="c-cust"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div><h2>ARPU &amp; Support Tickets</h2><p class="csub">Avg revenue per customer vs ticket volume</p></div>
+        <div class="legend">
+          <span><i class="dot" style="background:var(--accent)"></i>ARPU</span>
+          <span><i class="dot" style="background:var(--amber)"></i>Tickets</span>
+        </div>
+      </div>
+      <div class="chart-box"><canvas id="c-arpu"></canvas></div>
+    </div>
+  </div>
+
+  <footer class="foot">Northwind Analytics · figures computed from source data · not financial advice</footer>
+</div>
+<script>
+"use strict";
+
+/* ---------- Source data (24 months) ---------- */
+var RAW = [
+  ["2024-07",48200,31,9,142],["2024-08",51800,34,11,155],["2024-09",55100,29,13,168],
+  ["2024-10",59400,37,10,151],["2024-11",63900,41,12,177],["2024-12",66200,26,19,203],
+  ["2025-01",71800,48,14,166],["2025-02",77300,44,11,158],["2025-03",83900,52,13,171],
+  ["2025-04",88100,39,17,189],["2025-05",94600,51,12,164],["2025-06",101200,57,15,180],
+  ["2025-07",105800,43,21,214],["2025-08",112400,55,14,176],["2025-09",120900,63,13,182],
+  ["2025-10",126300,48,20,205],["2025-11",134700,66,15,191],["2025-12",138900,38,27,238],
+  ["2026-01",148600,71,16,187],["2026-02",157200,64,14,179],["2026-03",167800,78,17,196],
+  ["2026-04",174300,55,23,221],["2026-05",185900,82,15,188],["2026-06",197400,74,18,203]
+];
+
+/* Base customer count so month 0 is a sensible starting cohort. */
+var BASE_CUSTOMERS = 300;
+
+var DATA = (function () {
+  var running = BASE_CUSTOMERS, out = [];
+  for (var i = 0; i < RAW.length; i++) {
+    var r = RAW[i];
+    running += r[2] - r[3];
+    out.push({
+      month: r[0], mrr: r[1], nw: r[2], ch: r[3], tk: r[4],
+      customers: running, arpu: r[1] / running
+    });
+  }
+  return out;
+})();
+
+var MONTH_LABELS = { "01":"Jan","02":"Feb","03":"Mar","04":"Apr","05":"May","06":"Jun",
+  "07":"Jul","08":"Aug","09":"Sep","10":"Oct","11":"Nov","12":"Dec" };
+function fmtMonth(m, withYear) {
+  var p = m.split("-");
+  return MONTH_LABELS[p[1]] + (withYear ? " '" + p[0].slice(2) : "");
+}
+function usd(n) {
+  if (n >= 1000) return "$" + (n / 1000).toFixed(n >= 100000 ? 0 : 1) + "k";
+  return "$" + Math.round(n);
+}
+function usdFull(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
+function pct(n) { return (n >= 0 ? "+" : "") + n.toFixed(1) + "%"; }
+
+/* ---------- State ---------- */
+var state = { range: 12, theme: "light" };
+function view() { return DATA.slice(Math.max(0, DATA.length - state.range)); }
+
+/* ---------- KPIs ---------- */
+function renderKpis() {
+  var v = view();
+  var last = v[v.length - 1], prev = v[v.length - 2] || last;
+
+  var mrrChange = ((last.mrr - prev.mrr) / prev.mrr) * 100;
+  var netNew = last.nw - last.ch;
+  var netPrev = prev.nw - prev.ch;
+  // Monthly customer churn rate = churned this month / customers at start of month
+  var startCust = last.customers - last.nw + last.ch;
+  var churnRate = (last.ch / startCust) * 100;
+  var prevStart = prev.customers - prev.nw + prev.ch;
+  var churnPrev = (prev.ch / prevStart) * 100;
+  var arpuChange = ((last.arpu - prev.arpu) / prev.arpu) * 100;
+
+  var cards = [
+    { label: "MRR", val: usdFull(last.mrr), chg: mrrChange, good: mrrChange >= 0, note: "vs last mo" },
+    { label: "Customers", val: last.customers.toLocaleString("en-US"),
+      chg: netNew, isCount: true, good: netNew >= 0, note: "net new" },
+    { label: "Net New (mo)", val: (netNew >= 0 ? "+" : "") + netNew,
+      chg: netNew - netPrev, isCount: true, good: (netNew - netPrev) >= 0, note: "vs prior net" },
+    { label: "Churn Rate", val: churnRate.toFixed(1) + "%",
+      chg: churnRate - churnPrev, isPts: true, good: (churnRate - churnPrev) <= 0, note: "vs last mo" }
+  ];
+
+  var html = cards.map(function (c) {
+    var cls = c.good ? "up" : "down";
+    var arrow = c.good ? "▲" : "▼";
+    var chgTxt;
+    if (c.isCount) chgTxt = (c.chg >= 0 ? "+" : "") + c.chg;
+    else if (c.isPts) chgTxt = (c.chg >= 0 ? "+" : "") + c.chg.toFixed(1) + " pts";
+    else chgTxt = pct(c.chg);
+    return '<div class="kpi"><div class="label">' + c.label + '</div>' +
+      '<div class="val tnum">' + c.val + '</div>' +
+      '<span class="chip ' + cls + '">' + arrow + ' <span class="tnum">' + chgTxt +
+      '</span> <span class="sub">' + c.note + '</span></span></div>';
+  }).join("");
+  document.getElementById("kpis").innerHTML = html;
+}
+
+/* ---------- Insight (computed from full history) ---------- */
+function renderInsight() {
+  // Peak churn month
+  var worst = DATA[0], best = DATA[0];
+  for (var i = 0; i < DATA.length; i++) {
+    var startC = DATA[i].customers - DATA[i].nw + DATA[i].ch;
+    DATA[i]._crate = DATA[i].ch / startC;
+    if (DATA[i]._crate > worst._crate) worst = DATA[i];
+  }
+  // Fastest MRR growth month (MoM %)
+  var fast = DATA[1], fastPct = 0;
+  for (var j = 1; j < DATA.length; j++) {
+    var g = (DATA[j].mrr - DATA[j - 1].mrr) / DATA[j - 1].mrr;
+    if (g > fastPct) { fastPct = g; fast = DATA[j]; }
+  }
+  var totalGrowth = ((DATA[DATA.length - 1].mrr - DATA[0].mrr) / DATA[0].mrr) * 100;
+
+  document.getElementById("ins-title").textContent =
+    "MRR is up " + totalGrowth.toFixed(0) + "% over 24 months — but Dec churn is the recurring soft spot";
+  document.getElementById("ins-body").innerHTML =
+    "MRR grew from <b>" + usdFull(DATA[0].mrr) + "</b> to <b>" + usdFull(DATA[DATA.length - 1].mrr) +
+    "</b>. The single worst month for churn was <b>" + fmtMonth(worst.month, true) +
+    "</b> (<b>" + worst.ch + " logos</b>, ~" + (worst._crate * 100).toFixed(1) +
+    "% of base) — both Decembers spike as annual contracts lapse. The strongest growth month was <b>" +
+    fmtMonth(fast.month, true) + "</b> at <b>" + pct(fastPct * 100) + " MoM</b>.";
+}
+/* ---------- Canvas helpers ---------- */
+function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+function setupCanvas(cv, h) {
+  var dpr = window.devicePixelRatio || 1;
+  var w = cv.parentNode.clientWidth;
+  cv.style.height = h + "px";
+  cv.width = Math.round(w * dpr);
+  cv.height = Math.round(h * dpr);
+  var ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  return { ctx: ctx, w: w, h: h };
+}
+function niceMax(v) {
+  var pow = Math.pow(10, Math.floor(Math.log10(v)));
+  var f = v / pow;
+  var nf = f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10;
+  return nf * pow;
+}
+function ease(t) { return 1 - Math.pow(1 - t, 3); }
+
+/* Animation runner: calls draw(progress) from 0..1 */
+function animate(key, dur, draw) {
+  if (animate._raf[key]) cancelAnimationFrame(animate._raf[key]);
+  var start = null;
+  function step(ts) {
+    if (start === null) start = ts;
+    var p = Math.min(1, (ts - start) / dur);
+    draw(ease(p));
+    if (p < 1) animate._raf[key] = requestAnimationFrame(step);
+  }
+  animate._raf[key] = requestAnimationFrame(step);
+}
+animate._raf = {};
+
+/* ---------- Chart 1: MRR area+line ---------- */
+function drawMRR() {
+  var v = view(), cv = document.getElementById("c-mrr");
+  var isNarrow = window.innerWidth < 560;
+  var s = setupCanvas(cv, isNarrow ? 220 : 260);
+  var ctx = s.ctx, W = s.w, H = s.h;
+  var padL = 52, padR = 14, padT = 14, padB = 30;
+  var plotW = W - padL - padR, plotH = H - padT - padB;
+  var maxV = niceMax(Math.max.apply(null, v.map(function (d) { return d.mrr; })) * 1.05);
+  var ink = css("--ink-soft"), faint = css("--ink-faint"), grid = css("--grid"), acc = css("--accent");
+
+  function x(i) { return padL + (v.length === 1 ? plotW / 2 : (i / (v.length - 1)) * plotW); }
+  function y(val) { return padT + plotH - (val / maxV) * plotH; }
+
+  animate("mrr", 800, function (p) {
+    ctx.clearRect(0, 0, W, H);
+    ctx.font = "11px -apple-system, sans-serif";
+    ctx.textBaseline = "middle";
+    // gridlines + y labels
+    var ticks = 4;
+    ctx.strokeStyle = grid; ctx.fillStyle = faint; ctx.lineWidth = 1;
+    for (var t = 0; t <= ticks; t++) {
+      var gv = (maxV / ticks) * t, gy = y(gv);
+      ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(W - padR, gy); ctx.stroke();
+      ctx.textAlign = "right";
+      ctx.fillText(usd(gv), padL - 8, gy);
+    }
+    // x labels
+    ctx.textAlign = "center"; ctx.fillStyle = faint;
+    var stepX = Math.ceil(v.length / (isNarrow ? 5 : 8));
+    for (var i = 0; i < v.length; i++) {
+      if (i % stepX === 0 || i === v.length - 1) {
+        ctx.fillText(fmtMonth(v[i].month, true), x(i), H - padB + 15);
+      }
+    }
+    // animated clip
+    var n = Math.max(1, Math.floor(p * (v.length - 1)) + 1);
+    var frac = p * (v.length - 1) - Math.floor(p * (v.length - 1));
+    var pts = [];
+    for (var k = 0; k < n; k++) pts.push([x(k), y(v[k].mrr)]);
+    if (n < v.length && frac > 0) {
+      var xa = x(n - 1), xb = x(n), ya = y(v[n - 1].mrr), yb = y(v[n].mrr);
+      pts.push([xa + (xb - xa) * frac, ya + (yb - ya) * frac]);
+    }
+    // area
+    var grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+    grad.addColorStop(0, css("--accent-soft"));
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], padT + plotH);
+    pts.forEach(function (pt) { ctx.lineTo(pt[0], pt[1]); });
+    ctx.lineTo(pts[pts.length - 1][0], padT + plotH);
+    ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+    // line
+    ctx.beginPath();
+    pts.forEach(function (pt, idx) { idx ? ctx.lineTo(pt[0], pt[1]) : ctx.moveTo(pt[0], pt[1]); });
+    ctx.strokeStyle = acc; ctx.lineWidth = 2.4; ctx.lineJoin = "round"; ctx.stroke();
+    // end dot + last value
+    if (p >= 0.999) {
+      var lp = pts[pts.length - 1];
+      ctx.beginPath(); ctx.arc(lp[0], lp[1], 4, 0, Math.PI * 2);
+      ctx.fillStyle = acc; ctx.fill();
+      ctx.strokeStyle = css("--panel"); ctx.lineWidth = 2; ctx.stroke();
+    }
+  });
+}
+
+/* ---------- Chart 2: New vs Churned grouped bars ---------- */
+function drawCust() {
+  var v = view(), cv = document.getElementById("c-cust");
+  var isNarrow = window.innerWidth < 560;
+  var s = setupCanvas(cv, 230);
+  var ctx = s.ctx, W = s.w, H = s.h;
+  var padL = 34, padR = 10, padT = 14, padB = 28;
+  var plotW = W - padL - padR, plotH = H - padT - padB;
+  var maxV = niceMax(Math.max.apply(null, v.map(function (d) { return d.nw; })) * 1.1);
+  var faint = css("--ink-faint"), grid = css("--grid");
+  var green = css("--green"), red = css("--red");
+  var slot = plotW / v.length, bw = Math.max(3, Math.min(14, slot * 0.34));
+
+  function y(val) { return padT + plotH - (val / maxV) * plotH; }
+
+  animate("cust", 750, function (p) {
+    ctx.clearRect(0, 0, W, H);
+    ctx.font = "11px -apple-system, sans-serif"; ctx.textBaseline = "middle";
+    ctx.strokeStyle = grid; ctx.fillStyle = faint; ctx.lineWidth = 1;
+    var ticks = 4;
+    for (var t = 0; t <= ticks; t++) {
+      var gv = (maxV / ticks) * t, gy = y(gv);
+      ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(W - padR, gy); ctx.stroke();
+      ctx.textAlign = "right"; ctx.fillText(String(Math.round(gv)), padL - 6, gy);
+    }
+    var base = padT + plotH;
+    ctx.textAlign = "center";
+    var stepX = Math.ceil(v.length / (isNarrow ? 5 : 9));
+    for (var i = 0; i < v.length; i++) {
+      var cx = padL + slot * i + slot / 2;
+      var hN = (v[i].nw / maxV) * plotH * p;
+      var hC = (v[i].ch / maxV) * plotH * p;
+      ctx.fillStyle = green;
+      roundRect(ctx, cx - bw - 1, base - hN, bw, hN, 3);
+      ctx.fillStyle = red;
+      roundRect(ctx, cx + 1, base - hC, bw, hC, 3);
+      if (i % stepX === 0 || i === v.length - 1) {
+        ctx.fillStyle = faint;
+        ctx.fillText(fmtMonth(v[i].month, isNarrow ? false : true), cx, H - padB + 13);
+      }
+    }
+  });
+}
+function roundRect(ctx, x, y, w, h, r) {
+  if (h < 0.5) return;
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath(); ctx.fill();
+}
+
+/* ---------- Chart 3: ARPU line + tickets bars (dual axis) ---------- */
+function drawArpu() {
+  var v = view(), cv = document.getElementById("c-arpu");
+  var isNarrow = window.innerWidth < 560;
+  var s = setupCanvas(cv, 230);
+  var ctx = s.ctx, W = s.w, H = s.h;
+  var padL = 40, padR = 40, padT = 14, padB = 28;
+  var plotW = W - padL - padR, plotH = H - padT - padB;
+  var maxTk = niceMax(Math.max.apply(null, v.map(function (d) { return d.tk; })) * 1.1);
+  var arpuVals = v.map(function (d) { return d.arpu; });
+  var minA = Math.min.apply(null, arpuVals), maxA = Math.max.apply(null, arpuVals);
+  var padA = (maxA - minA) * 0.35 || 10; minA -= padA; maxA += padA;
+  var faint = css("--ink-faint"), grid = css("--grid"), acc = css("--accent"), amber = css("--amber");
+  var slot = plotW / v.length, bw = Math.max(3, Math.min(16, slot * 0.5));
+
+  function yT(val) { return padT + plotH - (val / maxTk) * plotH; }
+  function yA(val) { return padT + plotH - ((val - minA) / (maxA - minA)) * plotH; }
+  function x(i) { return padL + slot * i + slot / 2; }
+
+  animate("arpu", 800, function (p) {
+    ctx.clearRect(0, 0, W, H);
+    ctx.font = "11px -apple-system, sans-serif"; ctx.textBaseline = "middle";
+    ctx.strokeStyle = grid; ctx.lineWidth = 1;
+    var ticks = 4;
+    for (var t = 0; t <= ticks; t++) {
+      var gy = padT + plotH - (plotH / ticks) * t;
+      ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(W - padR, gy); ctx.stroke();
+      ctx.fillStyle = amber; ctx.textAlign = "right";
+      ctx.fillText(String(Math.round((maxTk / ticks) * t)), padL - 6, gy);
+      ctx.fillStyle = acc; ctx.textAlign = "left";
+      ctx.fillText("$" + Math.round(minA + ((maxA - minA) / ticks) * t), W - padR + 6, gy);
+    }
+    var base = padT + plotH;
+    // ticket bars
+    for (var i = 0; i < v.length; i++) {
+      var h = (v[i].tk / maxTk) * plotH * p;
+      ctx.fillStyle = "rgba(245,165,36,0.55)";
+      roundRect(ctx, x(i) - bw / 2, base - h, bw, h, 3);
+    }
+    // arpu line (animated reveal)
+    var n = Math.max(1, Math.floor(p * (v.length - 1)) + 1);
+    var frac = p * (v.length - 1) - Math.floor(p * (v.length - 1));
+    var pts = [];
+    for (var k = 0; k < n; k++) pts.push([x(k), yA(v[k].arpu)]);
+    if (n < v.length && frac > 0) {
+      var xa = x(n - 1), xb = x(n), ya = yA(v[n - 1].arpu), yb = yA(v[n].arpu);
+      pts.push([xa + (xb - xa) * frac, ya + (yb - ya) * frac]);
+    }
+    ctx.beginPath();
+    pts.forEach(function (pt, idx) { idx ? ctx.lineTo(pt[0], pt[1]) : ctx.moveTo(pt[0], pt[1]); });
+    ctx.strokeStyle = acc; ctx.lineWidth = 2.4; ctx.lineJoin = "round"; ctx.stroke();
+    if (p >= 0.999) {
+      pts.forEach(function (pt) {
+        ctx.beginPath(); ctx.arc(pt[0], pt[1], 2.6, 0, Math.PI * 2);
+        ctx.fillStyle = acc; ctx.fill();
+      });
+    }
+    // x labels
+    ctx.fillStyle = faint; ctx.textAlign = "center";
+    var stepX = Math.ceil(v.length / (isNarrow ? 5 : 9));
+    for (var j = 0; j < v.length; j++) {
+      if (j % stepX === 0 || j === v.length - 1)
+        ctx.fillText(fmtMonth(v[j].month, isNarrow ? false : true), x(j), H - padB + 13);
+    }
+  });
+}
+
+/* ---------- Orchestration ---------- */
+function renderCharts() { drawMRR(); drawCust(); drawArpu(); }
+function renderAll() { renderKpis(); renderCharts(); }
+
+/* Range toggle */
+document.getElementById("range").addEventListener("click", function (e) {
+  var b = e.target.closest("button"); if (!b) return;
+  state.range = parseInt(b.getAttribute("data-r"), 10);
+  Array.prototype.forEach.call(this.querySelectorAll("button"), function (x) { x.classList.remove("active"); });
+  b.classList.add("active");
+  document.getElementById("mrr-sub").textContent =
+    (state.range === 24 ? "All 24 months" : "Last " + state.range + " months") + " of MRR";
+  renderAll();
+});
+
+/* Theme toggle */
+var themeBtn = document.getElementById("theme");
+themeBtn.addEventListener("click", function () {
+  var dark = document.documentElement.getAttribute("data-theme") === "dark";
+  document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+  themeBtn.textContent = dark ? "🌙" : "☀️";
+  setTimeout(renderCharts, 60);
+});
+
+/* Resize (debounced) */
+var rt;
+window.addEventListener("resize", function () {
+  clearTimeout(rt);
+  rt = setTimeout(renderCharts, 140);
+});
+
+/* Init */
+renderInsight();
+renderAll();
+</script>
+</body>
+</html>

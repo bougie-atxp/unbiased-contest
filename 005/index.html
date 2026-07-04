@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contest #005 — Four models built the same dashboard. The prettiest got the numbers wrong. · unbiased.ai</title>
+<meta name="description" content="Four models built the same analytics dashboard from one CSV. They all look sharp. One of them is confidently, expensively wrong.">
+<meta property="og:title" content="The prettiest dashboard got the numbers wrong.">
+<meta property="og:description" content="Four models, one dataset, one shot each. Same charts, different math — and a 3× price gap for the ones that clear the bar.">
+<meta property="og:image" content="a-hero.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23101112'/%3E%3Cpath d='M16 7v18M9 12h14M10.5 12l-2.8 5.4a3.4 3.4 0 006.6 0L11.5 12M21.5 12l-2.8 5.4a3.4 3.4 0 006.6 0L22.5 12' stroke='%23FAFAF7' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAFAF7;--card:#FFFFFF;--ink:#101112;--body:#3D3F42;--muted:#71757C;--line:#E8E6E0;
+  --em:#0E9F6E;--em-deep:#0B7D57;--em-soft:#EAF7F1;--amber:#B45309;--amber-soft:#FBF4E9;
+  --red:#B91C1C;--red-soft:#FBEBEB;
+  --r:14px;--shadow:0 1px 2px rgba(16,17,18,.04),0 8px 24px -12px rgba(16,17,18,.10);
+  --shadow-lift:0 2px 4px rgba(16,17,18,.05),0 20px 44px -16px rgba(16,17,18,.18);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:clip}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:'Space Grotesk',Inter,sans-serif;letter-spacing:-.025em;line-height:1.08}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+a{color:inherit}
+.rev{opacity:0;transform:translateY(10px);transition:opacity .55s ease,transform .55s ease}
+.rev.in{opacity:1;transform:none}
+
+header{position:sticky;top:0;z-index:50;background:rgba(250,250,247,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.hbar{display:flex;align-items:center;justify-content:space-between;height:60px}
+.mark{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16.5px}
+.mark .glyph{width:26px;height:26px;border-radius:7px;background:var(--ink);display:grid;place-items:center;flex:none}
+.hmeta{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted);font-weight:500}
+.pill{border:1px solid var(--line);border-radius:99px;padding:4px 12px;background:var(--card);white-space:nowrap}
+
+.hero{padding:60px 0 8px;position:relative}
+.hero::before{content:"";position:absolute;top:-30px;right:-40px;width:480px;height:440px;max-width:60vw;background:radial-gradient(closest-side,rgba(14,159,110,.11),transparent);pointer-events:none;z-index:-1}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--em-deep);margin-bottom:20px}
+.eyebrow::before{content:"";width:18px;height:1.5px;background:var(--em)}
+.hero h1{font-size:clamp(34px,4.8vw,56px);max-width:960px}
+.hero h1 .em{color:var(--em-deep)}
+.hero .dek{margin-top:20px;font-size:17px;color:var(--body);max-width:680px}
+
+.quiz{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:30px}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;display:block;transition:transform .2s,box-shadow .2s,border-color .2s;position:relative;cursor:pointer}
+.qcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift)}
+.qcard.guess{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink),var(--shadow)}
+.qcard.hi{border-color:var(--amber);box-shadow:0 0 0 2px var(--amber),var(--shadow-lift)}
+.qcard.lo{border-color:var(--em);box-shadow:0 0 0 2px var(--em),var(--shadow-lift)}
+.qframe{position:relative;aspect-ratio:16/10;overflow:hidden;background:#F3F2ED}
+.qframe img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.qframe::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34px;background:linear-gradient(transparent,rgba(243,242,237,.92));pointer-events:none}
+.qtag{position:absolute;top:10px;left:10px;font-size:10px;font-weight:800;letter-spacing:.05em;padding:4px 9px;border-radius:6px;color:#fff;opacity:0;transform:translateY(-3px);transition:opacity .35s,transform .35s;box-shadow:0 2px 8px rgba(0,0,0,.22);z-index:2}
+.qtag.show{opacity:1;transform:none}
+.qtag.amber{background:var(--amber)} .qtag.em{background:var(--em)}
+.qbadge{position:absolute;top:10px;right:10px;font-size:10px;font-weight:800;letter-spacing:.03em;padding:4px 9px;border-radius:6px;background:rgba(16,17,18,.82);color:#fff;opacity:0;transform:translateY(-3px);transition:opacity .35s,transform .35s;z-index:2}
+.qbadge.show{opacity:1;transform:none}
+.qbadge.good{background:var(--em)} .qbadge.bad{background:var(--red)}
+.qmeta{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 14px}
+.qname{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:8px}
+.qname .lbl{width:22px;height:22px;border-radius:6px;background:#F1EFE9;color:var(--muted);display:grid;place-items:center;font-size:12px;font-weight:700}
+.qopen{font-size:11.5px;color:var(--muted);font-weight:600;text-decoration:none}
+.qopen:hover{color:var(--em-deep);text-decoration:underline}
+.qprice{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:17px;color:var(--muted);letter-spacing:.06em}
+.qcard.revealed .qprice{letter-spacing:0}
+.quizbar{display:flex;align-items:center;gap:16px;margin-top:18px;flex-wrap:wrap}
+.revealbtn{background:var(--ink);color:#fff;border:none;border-radius:11px;padding:13px 22px;font:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:background .15s}
+.revealbtn:hover{background:#000}
+.revealbtn:disabled{opacity:.45;cursor:default}
+.punch{font-size:14px;color:var(--body);font-weight:500;line-height:1.5}
+.punch b{color:var(--ink)}
+
+.sec{padding:72px 0 0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
+.stat .v{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:clamp(20px,2.2vw,26px)}
+.stat .l{font-size:12px;color:var(--muted);font-weight:500;margin-top:3px;min-height:2.5em}
+.stat .v.em{color:var(--em-deep)} .stat .v.am{color:var(--amber)}
+
+.gapgrid{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center;margin-top:24px}
+.gaptext h2{font-size:25px;margin-bottom:14px}
+.gaptext p{font-size:15px;color:var(--body);margin-bottom:12px}
+.gaptext .lede{font-weight:600;color:var(--ink)}
+.gaptext .pareto{margin-top:16px;border-left:3px solid var(--em);padding:4px 0 4px 16px;font-size:15px;color:var(--body)}
+.gaptext .pareto b{color:var(--em-deep)}
+.scalecard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-lift);padding:22px 24px}
+.scalecard .sc-t{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:13px}
+.seg{display:inline-flex;background:#F1EFE9;border-radius:10px;padding:3px;gap:2px;margin-bottom:16px}
+.seg button{border:none;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--muted);padding:7px 13px;border-radius:8px;cursor:pointer;transition:color .15s}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.09)}
+.sc-row{display:flex;align-items:baseline;justify-content:space-between;padding:8px 0}
+.sc-row .k{font-size:13.5px;color:var(--body)}
+.sc-row .v{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:19px}
+.sc-gap{margin-top:12px;padding-top:16px;border-top:1px solid var(--line)}
+.sc-gap .lbl{font-size:12px;color:var(--muted);font-weight:600}
+.sc-gap .big{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:clamp(30px,4vw,40px);color:var(--em-deep);letter-spacing:-.02em;line-height:1.04;margin-top:3px}
+.sc-gap .yr{font-size:13px;color:var(--muted);margin-top:4px}
+.sc-foot{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.55}
+
+/* wrong-numbers act */
+.trap{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.trap-top{display:grid;grid-template-columns:1.15fr 1fr;gap:0}
+.trap-l{padding:30px 32px;border-right:1px solid var(--line)}
+.trap-l .kick{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--red);background:var(--red-soft);border-radius:99px;padding:5px 12px;margin-bottom:16px}
+.trap-l h2{font-size:27px;margin-bottom:14px;max-width:16ch}
+.trap-l p{font-size:14.5px;color:var(--body);margin-bottom:12px}
+.trap-l p b{color:var(--ink)}
+.trap-shot{position:relative;background:#F3F2ED}
+.chrome{background:#EFEDE7;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:7px;padding:9px 12px}
+.chrome .dot{width:9px;height:9px;border-radius:50%;background:#CFCCC4}
+.chrome .url{margin-left:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:3px 10px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trap-shot img{width:100%;display:block}
+.trap-shot .frame-in{max-height:360px;overflow:hidden;position:relative}
+.trap-shot .frame-in::after{content:"";position:absolute;left:0;right:0;bottom:0;height:44px;background:linear-gradient(transparent,rgba(243,242,237,.96))}
+.recon{border-top:1px solid var(--line);padding:24px 32px 30px}
+.recon .t{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.errgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.errcard{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--paper)}
+.errcard .metric{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:10px}
+.errcard .rowline{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:13.5px;padding:3px 0}
+.errcard .rowline .lab{color:var(--body)}
+.errcard .shown{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:18px;color:var(--red)}
+.errcard .shown.ok{color:var(--em-deep)}
+.errcard .truth{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:18px;color:var(--em-deep)}
+.errcard .note{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5}
+.errcard .off{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;color:var(--red);background:var(--red-soft);border-radius:5px;padding:2px 7px;margin-top:8px}
+
+.verdict{display:grid;grid-template-columns:1.12fr 1fr;gap:0;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.vleft{padding:30px 32px;border-right:1px solid var(--line)}
+.vleft h2{font-size:24px;margin-bottom:14px}
+.vleft p{font-size:14.5px;color:var(--body);margin-bottom:12px}
+.vleft .kicker{font-weight:700;color:var(--ink)}
+.vright{padding:30px 32px;display:flex;flex-direction:column}
+.vright .t{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:left;padding:0 8px 9px;border-bottom:1px solid var(--line);font-weight:600}
+th.r,td.r{text-align:right}
+td{padding:11px 8px;border-bottom:1px solid #F1EFE9;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+td .tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.08em;border-radius:5px;padding:2px 7px;margin-left:7px;vertical-align:1px}
+td .tag.lo{background:var(--em-soft);color:var(--em-deep)}
+td .tag.hi{background:var(--amber-soft);color:var(--amber)}
+td .tag.bad{background:var(--red-soft);color:var(--red)}
+td .chk{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fine{font-size:11.5px;color:var(--muted);margin-top:auto;padding-top:14px;line-height:1.6}
+
+.method{margin-top:24px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.mcell{border:1px dashed var(--line);border-radius:var(--r);padding:16px 18px;background:rgba(255,255,255,.5)}
+.mcell h4{font-size:12.5px;font-weight:700;margin-bottom:5px}
+.mcell p{font-size:12px;color:var(--muted);line-height:1.6}
+.runnote{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.65;border-left:3px solid var(--line);padding-left:14px}
+
+.cta{background:var(--ink);border-radius:18px;color:#fff;padding:52px 48px;margin:76px 0 0;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px;position:relative;overflow:hidden}
+.cta::after{content:"";position:absolute;right:-120px;top:-120px;width:340px;height:340px;border-radius:50%;background:radial-gradient(closest-side,rgba(14,159,110,.35),transparent)}
+.cta h2{font-size:28px;max-width:560px;position:relative;z-index:1}
+.cta p{color:#ABAEA9;font-size:14.5px;margin-top:10px;max-width:520px;position:relative;z-index:1}
+.btns{display:flex;gap:12px;flex-wrap:wrap;position:relative;z-index:1}
+.btn{display:inline-block;padding:14px 24px;border-radius:11px;font-weight:600;font-size:15px;text-decoration:none}
+.btn.primary{background:var(--em);color:#fff}
+.btn.primary:hover{background:var(--em-deep)}
+.btn.ghost{border:1px solid #3A3B3D;color:#fff}
+.btn.ghost:hover{border-color:#5A5B5D}
+footer{margin-top:48px;padding:26px 0 54px;color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;border-top:1px solid var(--line)}
+footer a{color:var(--em-deep);font-weight:600;text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+@media(max-width:1020px){.stats{grid-template-columns:repeat(2,1fr)}.method{grid-template-columns:repeat(2,1fr)}.verdict,.trap-top{grid-template-columns:1fr}.vleft,.trap-l{border-right:none;border-bottom:1px solid var(--line)}.gapgrid{grid-template-columns:1fr;gap:26px}.errgrid{grid-template-columns:1fr}}
+@media(max-width:640px){.quiz{gap:10px}.qmeta{padding:9px 10px}.qname{font-size:12.5px}.qprice{font-size:15px}.qtag,.qbadge{font-size:9px;padding:3px 7px}.hmeta .pill.date{display:none}.hero{padding-top:48px}.hero::before{display:none}.cta{padding:38px 26px}.method{grid-template-columns:1fr}.vleft,.vright,.trap-l,.recon{padding:24px 20px}.vright table{font-size:12.5px}.vright th,.vright td{padding-left:6px;padding-right:6px}.qopen{display:none}.trap-l h2{font-size:23px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap hbar">
+    <div class="mark"><span class="glyph"><svg width="16" height="16" viewBox="0 0 32 32" fill="none"><path d="M16 7v18M9 12h14M10.5 12l-2.8 5.4a3.4 3.4 0 006.6 0L11.5 12M21.5 12l-2.8 5.4a3.4 3.4 0 006.6 0L22.5 12" stroke="#FAFAF7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>unbiased.ai</div>
+    <div class="hmeta"><span class="pill">Contest #005</span><span class="pill date">Ran 2026-07-04</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+<section class="hero">
+  <div class="eyebrow">Contest #005 · One CSV · Four leading models</div>
+  <h1>Four models built the same dashboard.<br>Which one is <span class="em">quietly wrong</span>?</h1>
+  <p class="dek">Same 24-month dataset, same brief, one shot each. Four analytics dashboards — KPI cards, hand-drawn charts, dark mode, the works. They all look sharp. Pick the one you think ran up the biggest bill, then reveal the prices <b>and</b> which ones actually got the numbers right.</p>
+  <div class="quiz" id="quiz">
+    <div class="qcard" data-key="a" data-cost="0.1597" data-checks="6" data-ok="0">
+      <div class="qframe"><img src="a-hero.png" alt="Dashboard A"><span class="qtag"></span><span class="qbadge"></span></div>
+      <div class="qmeta"><span class="qname"><span class="lbl">A</span>Dashboard A</span><span style="display:flex;align-items:center;gap:12px"><a class="qopen" href="page-a.html" target="_blank" rel="noopener">open ↗</a><span class="qprice">$•.••••</span></span></div>
+    </div>
+    <div class="qcard" data-key="b" data-cost="0.4274" data-checks="7" data-ok="1">
+      <div class="qframe"><img src="b-hero.png" alt="Dashboard B"><span class="qtag"></span><span class="qbadge"></span></div>
+      <div class="qmeta"><span class="qname"><span class="lbl">B</span>Dashboard B</span><span style="display:flex;align-items:center;gap:12px"><a class="qopen" href="page-b.html" target="_blank" rel="noopener">open ↗</a><span class="qprice">$•.••••</span></span></div>
+    </div>
+    <div class="qcard" data-key="c" data-cost="0.2731" data-checks="7" data-ok="1">
+      <div class="qframe"><img src="c-hero.png" alt="Dashboard C"><span class="qtag"></span><span class="qbadge"></span></div>
+      <div class="qmeta"><span class="qname"><span class="lbl">C</span>Dashboard C</span><span style="display:flex;align-items:center;gap:12px"><a class="qopen" href="page-c.html" target="_blank" rel="noopener">open ↗</a><span class="qprice">$•.••••</span></span></div>
+    </div>
+    <div class="qcard" data-key="d" data-cost="0.1447" data-checks="1" data-ok="0">
+      <div class="qframe"><img src="d-hero.png" alt="Dashboard D"><span class="qtag"></span><span class="qbadge"></span></div>
+      <div class="qmeta"><span class="qname"><span class="lbl">D</span>Dashboard D</span><span style="display:flex;align-items:center;gap:12px"><a class="qopen" href="page-d.html" target="_blank" rel="noopener">open ↗</a><span class="qprice">$•.••••</span></span></div>
+    </div>
+  </div>
+  <div class="quizbar"><button class="revealbtn" id="revealBtn">Reveal prices + scores →</button><span class="punch" id="punch">Each ran the same 7-point audit. Guess the priciest first — then reveal.</span></div>
+</section>
+
+<section class="sec" id="gap">
+  <div class="stats rev">
+    <div class="stat"><div class="v em num" data-settle="0.1447" data-prefix="$" data-dp="4">$0.1447</div><div class="l">Cheapest of the four — and it shipped a blank page</div></div>
+    <div class="stat"><div class="v am num" data-settle="0.4274" data-prefix="$" data-dp="4">$0.4274</div><div class="l">Priciest of the four</div></div>
+    <div class="stat"><div class="v num">3.0×</div><div class="l">Price gap across four near-identical-looking dashboards</div></div>
+    <div class="stat"><div class="v num">2 / 4</div><div class="l">Actually got every number right</div></div>
+  </div>
+  <div class="gapgrid rev">
+    <div class="gaptext">
+      <h2>They look the same. The math doesn't.</h2>
+      <p class="lede">Four dashboards. A 3× spread in what they cost. And on the one thing a data dashboard exists to do — show the right number — they split clean down the middle.</p>
+      <p>Two nailed every KPI. One rendered gorgeously and put a <b>wrong headline number</b> on screen. One burned the most tokens of anyone and shipped a blank page. You cannot tell which is which by looking — which is exactly the problem with picking a model by its logo.</p>
+      <div class="pareto"><b>That's what Pareto fixes.</b> It routes each job to the cheapest model that actually clears your quality bar — not the cheapest per token, the cheapest that's <i>right</i>. One endpoint, and you stop paying frontier prices for work a cheaper model nails.</div>
+    </div>
+    <div class="scalecard">
+      <div class="sc-t">A team shipping this dashboard job 50K× a month</div>
+      <div class="seg" id="seg">
+        <button data-v="10000">10K/mo</button>
+        <button data-v="50000" class="on">50K/mo</button>
+        <button data-v="250000">250K/mo</button>
+      </div>
+      <div class="sc-row"><span class="k">Hard-coded to the priciest that clears the bar</span><span class="v num am" id="scHigh" style="color:var(--amber)">$21,370</span></div>
+      <div class="sc-row"><span class="k">Routed to the cheapest that clears the bar</span><span class="v num" id="scLow" style="color:var(--em-deep)">$13,655</span></div>
+      <div class="sc-gap"><span class="lbl">You'd save — same correct dashboard, every time</span><div class="big num" id="scGap">$7,715/mo</div><div class="yr num" id="scYr">$92,580 a year</div></div>
+      <div class="sc-foot">Priciest passing run ($0.4274) vs cheapest passing run ($0.2731) × volume. The $0.1447 model is excluded — it clears no bar. Illustrative; your real mix varies, and measuring it is what the free audit does.</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="trap rev">
+    <div class="trap-top">
+      <div class="trap-l">
+        <span class="kick">● The trap</span>
+        <h2>The prettiest dashboard got the numbers wrong.</h2>
+        <p><b>Dashboard A</b> is the most polished of the four: 11 KPI cards, three clean charts including a dual-axis ARPU/tickets plot, a working dark toggle and a 6M / 12M / All range control. It looks like the winner.</p>
+        <p>It isn't. Its marquee number — total customers — reads <b>1,157</b>. The dataset says <b>857</b>. It summed every new customer for 24 months and never subtracted the 369 that churned. That one mistake then poisons a second: with an inflated base, its churn rate reads <b>1.6%</b> instead of the true <b>2.25%</b>.</p>
+        <p>Then its headline insight names the wrong record: it calls out Dec-2024 as the worst churn month. The real worst month is <b>Dec-2025</b> (27 churned, 238 tickets) — a full year off. Gorgeous shell, broken analytics.</p>
+      </div>
+      <div class="trap-shot">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard-a.html — Northwind Analytics</span></div>
+        <div class="frame-in"><img src="a-full.png" alt="Dashboard A full render — polished but wrong headline numbers"></div>
+      </div>
+    </div>
+    <div class="recon">
+      <div class="t">On-screen vs. the dataset</div>
+      <div class="errgrid">
+        <div class="errcard">
+          <div class="metric">Total customers</div>
+          <div class="rowline"><span class="lab">A showed</span><span class="shown num">1,157</span></div>
+          <div class="rowline"><span class="lab">Dataset</span><span class="truth num">857</span></div>
+          <span class="off">off by +35%</span>
+          <div class="note">Counted 1,226 gross adds, never subtracted 369 churned. The marquee number, wrong.</div>
+        </div>
+        <div class="errcard">
+          <div class="metric">Churn rate, final month</div>
+          <div class="rowline"><span class="lab">A showed</span><span class="shown num">1.6%</span></div>
+          <div class="rowline"><span class="lab">Dataset</span><span class="truth num">2.25%</span></div>
+          <span class="off">understated ~30%</span>
+          <div class="note">Inflated customer base blew up the denominator. One wrong number poisons the next.</div>
+        </div>
+        <div class="errcard">
+          <div class="metric">Worst churn month</div>
+          <div class="rowline"><span class="lab">A showed</span><span class="shown num">Dec-2024</span></div>
+          <div class="rowline"><span class="lab">Dataset</span><span class="truth num">Dec-2025</span></div>
+          <span class="off">named the runner-up</span>
+          <div class="note">Dec-2025 (27 churned, 238 tickets) is the record. A called out the second-worst as the worst.</div>
+        </div>
+      </div>
+      <p style="font-size:12.5px;color:var(--muted);margin-top:18px;line-height:1.6">For contrast: <b style="color:var(--ink)">Dashboards B and C</b> both computed all three correctly — 857 customers, 2.2–2.25% churn, Dec-2025 flagged as the record — live from the same embedded CSV. Same prompt. The difference is entirely in the math, which you'd never catch from the screenshot.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="verdict rev">
+    <div class="vleft">
+      <h2>The verdict</h2>
+      <p><span class="kicker">Two of four are trustworthy.</span> Dashboards B and C both pass all 7 checks — every KPI correct, three-plus charts, working controls, dark mode, clean at 375px. On accuracy it's a two-way tie.</p>
+      <p>So the tiebreak is the bill. B and C are functionally interchangeable, yet B costs <b>$0.4274</b> and C costs <b>$0.2731</b> — a <b>1.6× premium</b> for the same correct dashboard. A is cheaper still ($0.16) but ships wrong numbers. D is cheapest of all ($0.14) and ships nothing — it hit its token cap mid-file and rendered a blank page.</p>
+      <p>Pick by brand and you're gambling on both budget and correctness. Pick <b>the cheapest that clears the bar</b> — that's all routing is — and you land on C: every number right, at 64% of B's cost.</p>
+    </div>
+    <div class="vright">
+      <div class="t">The receipts</div>
+      <p style="font-size:12px;color:var(--muted);margin:-6px 0 14px;line-height:1.5">Blind labels. Prices are the real run cost; checks are the 7-point functional + accuracy audit.</p>
+      <table>
+        <thead><tr><th>Dashboard</th><th class="r">Checks</th><th class="r">Cost</th><th class="r">vs cheapest pass</th></tr></thead>
+        <tbody>
+          <tr><td><b>C</b><span class="tag lo">CHEAPEST PASS</span></td><td class="r"><span class="chk">7 / 7</span></td><td class="r num" style="color:var(--em-deep);font-weight:700">$0.2731</td><td class="r num">1×</td></tr>
+          <tr><td><b>B</b><span class="tag hi">PRICIEST</span></td><td class="r"><span class="chk">7 / 7</span></td><td class="r num" style="color:var(--amber);font-weight:700">$0.4274</td><td class="r num">1.6×</td></tr>
+          <tr><td><b>A</b><span class="tag bad">WRONG #s</span></td><td class="r"><span class="chk">6 / 7</span></td><td class="r num">$0.1597</td><td class="r num">0.6×</td></tr>
+          <tr><td><b>D</b><span class="tag bad">BLANK</span></td><td class="r"><span class="chk">1 / 7</span></td><td class="r num">$0.1447</td><td class="r num">0.5×</td></tr>
+        </tbody>
+      </table>
+      <p class="fine">Four leading models built these — Claude Fable 5, Claude Opus 4.8, GPT-5.5, and one more. We're not telling you which built which. On price alone the "cheapest" two are the two that fail — cheap per token, worthless as a deliverable. Labels withheld on purpose.</p>
+    </div>
+  </div>
+
+  <div class="method rev">
+    <div class="mcell"><h4>One shot each</h4><p>Identical prompt and embedded CSV, no cherry-picking. Each dashboard is exactly what the model returned.</p></div>
+    <div class="mcell"><h4>Audited by a robot</h4><p>Rendered in a real browser at 1280 and 375px: renders clean, 4+ KPI cards, 3+ charts, a working range control, dark-mode toggle, no h-scroll — and every displayed number read off the live DOM and checked against the dataset.</p></div>
+    <div class="mcell"><h4>Real bills</h4><p>Cost = each run's tokens × its published rate. Two ran as Claude agent runs; two through our at-cost gateway. Same yardstick per token.</p></div>
+    <div class="mcell"><h4>Labels withheld on purpose</h4><p>We don't map model to dashboard. If a logo told you which one was right, you'd already know. You can't — so it doesn't.</p></div>
+  </div>
+  <div class="runnote rev">Run 2026-07-04, one shot per model, same prompt + embedded CSV. Two models ran as Claude agent runs via the Anthropic API; GPT-5.5 and one more ran through our at-cost gateway. Cost yardstick: the two Claude runs = delivered output chars ÷ 4 × published rate ($50/M out Fable, $25/M out Opus); GPT-5.5 = real usage tokens × $30/M out + $2.5/M in; the fourth = real usage tokens × $3/M out + $0.93/M in.</div>
+</section>
+
+<section class="sec">
+  <div class="gaptext rev" style="max-width:760px">
+    <div class="pareto" style="border-left-width:4px;font-size:16px">
+      <b>The answer isn't picking a model — it's routing to the right one, every call.</b><br><br>
+      No lab can tell you "use us only when we're the cheapest thing that's correct." We can. Pareto meters every request, checks the output against your bar, and sends you to the cheapest model that clears it — so you get Dashboard C's math at Dashboard C's price, without ever betting the headline number on the prettiest render.
+    </div>
+  </div>
+</section>
+
+<section class="cta rev">
+  <div>
+    <h2>Send us your AI bill.</h2>
+    <p>We'll show you what you're spending, what you'd spend routed to the cheapest model that clears your bar, and where you're paying frontier prices for work a cheaper model gets right. Receipts attached, proven nightly.</p>
+  </div>
+  <div class="btns">
+    <a class="btn primary" href="mailto:hello@unbiased.ai?subject=Send%20us%20your%20AI%20bill">Send us your AI bill</a>
+    <a class="btn ghost" href="mailto:hello@unbiased.ai?subject=Run%20this%20matchup%20on%20my%20stack">Or run this matchup on your data</a>
+  </div>
+</section>
+
+<nav class="series" aria-label="The Contest Series" style="max-width:1080px;margin:44px auto 0;padding:14px 20px;background:var(--card);border:1px solid var(--line);border-radius:14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;font-size:12.5px">
+  <span style="font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-size:11px">The Contest Series</span>
+  <a href="/unbiased-contest/" style="color:var(--muted);text-decoration:none;font-weight:500">#001 Landing Page</a>
+  <a href="/unbiased-contest/002/" style="color:var(--muted);text-decoration:none;font-weight:500">#002 Support Inbox</a>
+  <a href="/unbiased-contest/003/" style="color:var(--muted);text-decoration:none;font-weight:500">#003 Extraction</a>
+  <a href="/unbiased-contest/004/" style="color:var(--muted);text-decoration:none;font-weight:500">#004 Bill Teardown</a>
+  <span style="color:var(--ink);font-weight:600">#005 Dashboard</span>
+</nav>
+
+<footer>
+  <span><b style="color:var(--ink)">unbiased.ai</b> · Loyal to your bill.</span>
+  <span>Contest #005 · Ran 2026-07-04 · <a href="https://bougie-atxp.github.io/unbiased-contest/">Contest #001 ↗</a></span>
+</footer>
+</main>
+
+<script>
+const ro=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll('.rev').forEach(el=>ro.observe(el));
+const so=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;so.unobserve(e.target);
+  const el=e.target,v=parseFloat(el.dataset.settle),dp=+el.dataset.dp,pre=el.dataset.prefix||'';
+  const t0=performance.now(),dur=900,from=v*.62;
+  const step=t=>{const p=Math.min(1,(t-t0)/dur),ease=1-Math.pow(1-p,3);el.textContent=pre+(from+(v-from)*ease).toFixed(dp);if(p<1)requestAnimationFrame(step)};
+  requestAnimationFrame(step);}),{threshold:.6});
+document.querySelectorAll('[data-settle]').forEach(el=>so.observe(el));
+
+// blind quiz — guess the priciest, then reveal prices + scores
+(function(){
+  const quiz=document.getElementById('quiz'); if(!quiz) return;
+  const cards=[...quiz.querySelectorAll('.qcard')], punch=document.getElementById('punch'), btn=document.getElementById('revealBtn');
+  let guess=null, done=false;
+  cards.forEach(c=>c.addEventListener('click',e=>{ if(done||e.target.closest('.qopen')) return; cards.forEach(x=>x.classList.remove('guess')); c.classList.add('guess'); guess=c.dataset.key; punch.innerHTML='Locked in <b>Dashboard '+c.dataset.key.toUpperCase()+'</b>. Now reveal →'; }));
+  btn.addEventListener('click',()=>{
+    if(done) return; done=true;
+    cards.forEach(c=>{
+      c.classList.add('revealed');
+      const p=c.querySelector('.qprice'); p.textContent='$'+parseFloat(c.dataset.cost).toFixed(4); p.style.color='var(--ink)';
+      const b=c.querySelector('.qbadge'), ok=c.dataset.ok==='1';
+      b.textContent=c.dataset.checks+'/7'; b.classList.add('show', ok?'good':'bad');
+    });
+    const hi=cards.find(c=>c.dataset.key==='b'), lo=cards.find(c=>c.dataset.key==='c');
+    hi.classList.add('hi'); lo.classList.add('lo');
+    const ht=hi.querySelector('.qtag'); ht.textContent='PRICIEST'; ht.classList.add('show','amber'); hi.querySelector('.qprice').style.color='var(--amber)';
+    const lt=lo.querySelector('.qtag'); lt.textContent='CHEAPEST THAT PASSES'; lt.classList.add('show','em'); lo.querySelector('.qprice').style.color='var(--em-deep)';
+    punch.innerHTML = guess==='b'
+      ? 'Sharp eye — <b>Dashboard B ($0.4274)</b> ran up the biggest bill. But note: <b>C</b> got the exact same 7/7 for 64% of the price, and the two <i>cheaper</i> ones both failed — <b>A</b> showed wrong numbers, <b>D</b> shipped blank.'
+      : (guess ? 'Most guess wrong. <b>B ($0.4274)</b> was priciest — but <b>C</b> matched it 7/7 for less, while the two cheapest (<b>A</b>, <b>D</b>) both failed. Cheap per token ≠ correct.'
+               : '<b>B ($0.4274)</b> was priciest; <b>C</b> matched it 7/7 for 64% of the cost. The two cheapest both failed — A wrong numbers, D blank. Cheapest ≠ correct.');
+    btn.disabled=true; btn.textContent='Revealed';
+  });
+})();
+
+// scale card: priciest-pass vs cheapest-pass at volume
+(function(){
+  const seg=document.getElementById('seg'); if(!seg) return;
+  const HI=0.4274, LO=0.2731, fmt=n=>'$'+Math.round(n).toLocaleString('en-US');
+  const set=v=>{document.getElementById('scHigh').textContent=fmt(HI*v);document.getElementById('scLow').textContent=fmt(LO*v);const g=(HI-LO)*v;document.getElementById('scGap').textContent=fmt(g)+'/mo';document.getElementById('scYr').textContent=fmt(g*12)+' a year';};
+  seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...seg.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');set(+b.dataset.v);});
+  set(50000);
+})();
+</script>
+</body>
+</html>

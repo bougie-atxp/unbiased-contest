@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Northwind Analytics — Growth Dashboard</title>
+<style>
+  :root{
+    --bg:#f5f7fa; --surface:#ffffff; --surface2:#f0f3f7;
+    --text:#0f1b2d; --muted:#5b6b80; --faint:#8a97a8;
+    --line:#e3e8ef; --grid:#e8edf3;
+    --accent:#2563eb; --accent-soft:rgba(37,99,235,.10);
+    --good:#0e9f6e; --bad:#e02424;
+    --new:#0e9f6e; --churn:#e02424; --tickets:#7c3aed;
+    --shadow:0 1px 2px rgba(15,27,45,.05),0 8px 24px -12px rgba(15,27,45,.12);
+    --radius:14px;
+  }
+  [data-theme="dark"]{
+    --bg:#0b1220; --surface:#131c2e; --surface2:#1a2438;
+    --text:#e8eef7; --muted:#9db0c7; --faint:#6b7f99;
+    --line:#24314a; --grid:#1e2a41;
+    --accent:#5b93ff; --accent-soft:rgba(91,147,255,.14);
+    --good:#34d399; --bad:#f87171;
+    --new:#34d399; --churn:#f87171; --tickets:#a78bfa;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -12px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--text);
+    line-height:1.45; transition:background .3s,color .3s;
+    padding-bottom:48px;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+  header.top{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:20px 0 4px;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{
+    width:36px;height:36px;border-radius:9px;flex:0 0 auto;
+    background:linear-gradient(135deg,var(--accent),#7c3aed);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:800;font-size:15px;letter-spacing:-.5px;
+  }
+  .brand h1{font-size:17px;font-weight:700;letter-spacing:-.2px;white-space:nowrap}
+  .brand .sub{font-size:12px;color:var(--muted)}
+  .controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .seg{
+    display:inline-flex;background:var(--surface);border:1px solid var(--line);
+    border-radius:10px;padding:3px;box-shadow:var(--shadow);
+  }
+  .seg button{
+    appearance:none;border:0;background:transparent;color:var(--muted);
+    font:inherit;font-size:13px;font-weight:600;padding:6px 14px;border-radius:8px;
+    cursor:pointer;transition:background .2s,color .2s;
+  }
+  .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+  .seg button:not([aria-pressed="true"]):hover{color:var(--text)}
+  .theme-btn{
+    appearance:none;border:1px solid var(--line);background:var(--surface);
+    color:var(--text);border-radius:10px;width:38px;height:38px;cursor:pointer;
+    font-size:16px;box-shadow:var(--shadow);transition:transform .2s;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .theme-btn:hover{transform:translateY(-1px)}
+  .asof{font-size:12px;color:var(--faint);margin:2px 0 14px}
+
+  .kpis{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;
+  }
+  .kpi{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 16px;box-shadow:var(--shadow);
+    opacity:0;transform:translateY(10px);
+    animation:rise .55s cubic-bezier(.22,.8,.3,1) forwards;
+  }
+  .kpi:nth-child(2){animation-delay:.07s}
+  .kpi:nth-child(3){animation-delay:.14s}
+  .kpi:nth-child(4){animation-delay:.21s}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .kpi .label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .kpi .value{
+    font-size:26px;font-weight:800;letter-spacing:-.5px;margin:4px 0 2px;
+    font-variant-numeric:tabular-nums;
+  }
+  .kpi .delta{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums;flex-wrap:wrap}
+  .kpi .delta .tag{color:var(--faint);font-weight:500}
+  .up{color:var(--good)} .down{color:var(--bad)}
+  .kpi .range-note{font-size:11.5px;color:var(--faint);margin-top:5px;font-variant-numeric:tabular-nums}
+
+  .insight{
+    display:flex;gap:12px;align-items:flex-start;
+    background:var(--accent-soft);border:1px solid var(--accent);
+    border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;
+    opacity:0;animation:rise .55s .25s cubic-bezier(.22,.8,.3,1) forwards;
+    transform:translateY(10px);
+  }
+  .insight .ico{font-size:18px;line-height:1.2;flex:0 0 auto}
+  .insight strong{font-weight:700}
+  .insight p{font-size:13.5px;color:var(--text)}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 16px 10px;box-shadow:var(--shadow);min-width:0;
+    opacity:0;transform:translateY(12px);
+    animation:rise .6s .3s cubic-bezier(.22,.8,.3,1) forwards;
+  }
+  .card.full{grid-column:1/-1}
+  .card h2{font-size:14.5px;font-weight:700;letter-spacing:-.1px}
+  .card .desc{font-size:12px;color:var(--muted);margin:2px 0 6px}
+  .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin:4px 0 2px;flex-wrap:wrap}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:9px;height:9px;border-radius:3px;display:inline-block}
+  .chart-box{width:100%}
+  .chart-box svg{width:100%;height:auto;display:block}
+  svg text{font-family:inherit}
+  .axis-t{font-size:11px;fill:var(--faint);font-variant-numeric:tabular-nums}
+  .axis-title{font-size:10.5px;fill:var(--faint);letter-spacing:.04em}
+  .gridline{stroke:var(--grid);stroke-width:1}
+  .zero{stroke:var(--line);stroke-width:1.25}
+
+  footer{margin-top:22px;font-size:12px;color:var(--faint);text-align:center}
+
+  @media (max-width:820px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .grid{grid-template-columns:1fr}
+    .kpi .value{font-size:22px}
+  }
+  @media (max-width:400px){
+    .brand h1{font-size:15px}
+    .kpis{gap:10px}
+    .kpi{padding:12px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001s!important;transition-duration:.001s!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">N</div>
+      <div>
+        <h1>Northwind Analytics</h1>
+        <div class="sub">Growth &amp; revenue dashboard</div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Time range">
+        <button type="button" data-range="6" aria-pressed="false">6M</button>
+        <button type="button" data-range="12" aria-pressed="true">12M</button>
+        <button type="button" data-range="24" aria-pressed="false">All</button>
+      </div>
+      <button type="button" class="theme-btn" id="themeBtn" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+    </div>
+  </header>
+  <p class="asof">Data through <strong>June 2026</strong> · 24 months · all figures computed from source data</p>
+
+  <section class="kpis" aria-label="Key metrics">
+    <div class="kpi">
+      <div class="label">Current MRR</div>
+      <div class="value" id="kpiMrr"></div>
+      <div class="delta" id="kpiMrrDelta"></div>
+      <div class="range-note" id="kpiMrrRange"></div>
+    </div>
+    <div class="kpi">
+      <div class="label">Total Customers</div>
+      <div class="value" id="kpiCust"></div>
+      <div class="delta" id="kpiCustDelta"></div>
+      <div class="range-note" id="kpiCustRange"></div>
+    </div>
+    <div class="kpi">
+      <div class="label">Net New (Jun)</div>
+      <div class="value" id="kpiNet"></div>
+      <div class="delta" id="kpiNetDelta"></div>
+      <div class="range-note" id="kpiNetRange"></div>
+    </div>
+    <div class="kpi">
+      <div class="label">Churn Rate</div>
+      <div class="value" id="kpiChurn"></div>
+      <div class="delta" id="kpiChurnDelta"></div>
+      <div class="range-note" id="kpiChurnRange"></div>
+    </div>
+  </section>
+
+  <section class="insight" aria-label="Insight">
+    <div class="ico">💡</div>
+    <p><strong>December churn spikes are the pattern to fix.</strong>
+    Churned customers hit <strong>19 in Dec 2024</strong> and a record <strong>27 in Dec 2025</strong> — the two worst months in the dataset, ~57% above the 14.7/mo average of all other months — and support tickets peaked at the same time (203 and 238). Growth still compounded through it: MRR is up <strong>4.1×</strong> in 24 months ($48.2k → $197.4k), with monthly adds of <strong>$10k+</strong> becoming the norm from Jan 2026 onward.</p>
+  </section>
+
+  <section class="grid">
+    <div class="card full">
+      <h2>Monthly Recurring Revenue</h2>
+      <p class="desc" id="mrrDesc"></p>
+      <div class="chart-box" id="chartMrr"></div>
+    </div>
+    <div class="card">
+      <h2>New vs. Churned Customers</h2>
+      <p class="desc" id="custDesc"></p>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--new)"></i>New</span>
+        <span><i class="dot" style="background:var(--churn)"></i>Churned</span>
+      </div>
+      <div class="chart-box" id="chartCust"></div>
+    </div>
+    <div class="card">
+      <h2>Support Tickets</h2>
+      <p class="desc" id="tickDesc"></p>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--tickets)"></i>Tickets / month</span>
+      </div>
+      <div class="chart-box" id="chartTickets"></div>
+    </div>
+  </section>
+
+  <footer>Northwind Analytics · internal metrics · Jul 2024 – Jun 2026</footer>
+</div>
+
+<script>
+"use strict";
+/* ---------- Source data (verbatim from CSV) ---------- */
+const RAW = [
+  ["2024-07",48200,31,9,142],["2024-08",51800,34,11,155],["2024-09",55100,29,13,168],
+  ["2024-10",59400,37,10,151],["2024-11",63900,41,12,177],["2024-12",66200,26,19,203],
+  ["2025-01",71800,48,14,166],["2025-02",77300,44,11,158],["2025-03",83900,52,13,171],
+  ["2025-04",88100,39,17,189],["2025-05",94600,51,12,164],["2025-06",101200,57,15,180],
+  ["2025-07",105800,43,21,214],["2025-08",112400,55,14,176],["2025-09",120900,63,13,182],
+  ["2025-10",126300,48,20,205],["2025-11",134700,66,15,191],["2025-12",138900,38,27,238],
+  ["2026-01",148600,71,16,187],["2026-02",157200,64,14,179],["2026-03",167800,78,17,196],
+  ["2026-04",174300,55,23,221],["2026-05",185900,82,15,188],["2026-06",197400,74,18,203]
+];
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DATA = RAW.map(r => {
+  const [y,m] = r[0].split("-").map(Number);
+  return { key:r[0], y, m, label:MONTHS[m-1]+" '"+String(y).slice(2),
+           mrr:r[1], nw:r[2], ch:r[3], tk:r[4] };
+});
+/* cumulative customers (net adds since Jul 2024 baseline of 0) */
+let run = 0;
+DATA.forEach(d => { d.custStart = run; run += d.nw - d.ch; d.custEnd = run;
+  d.churnRate = d.custStart > 0 ? d.ch / d.custStart * 100 : 0; });
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const fmtMoney = n => "$" + n.toLocaleString("en-US");
+const fmtK = n => n >= 1000 ? "$" + (n/1000).toLocaleString("en-US",{maximumFractionDigits:1}) + "k" : "$"+n;
+const fmtNum = n => n.toLocaleString("en-US");
+const pct = (n,d=1) => (n>=0?"+":"") + n.toFixed(d) + "%";
+const arrow = up => up ? "▲" : "▼";
+function deltaHTML(val, positiveIsGood, suffix, tag){
+  const up = val >= 0;
+  const good = positiveIsGood ? up : !up;
+  return '<span class="' + (good?"up":"down") + '">' + arrow(up) + " " + suffix + '</span>' +
+         '<span class="tag">' + tag + '</span>';
+}
+function niceMax(v){
+  if (v <= 0) return 1;
+  const p = Math.pow(10, Math.floor(Math.log10(v)));
+  for (const m of [1,1.5,2,2.5,3,4,5,6,8,10]) { if (m*p >= v) return m*p; }
+  return 10*p;
+}
+
+/* animation styles (injected so charts can use them) */
+const extraCSS = document.createElement("style");
+extraCSS.textContent = `
+  .line-path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .line-anim{animation:dash 1s cubic-bezier(.3,.7,.3,1) forwards}
+  @keyframes dash{to{stroke-dashoffset:0}}
+  .area-anim{opacity:0;animation:fadeIn .9s .25s ease forwards}
+  .pt{opacity:0;animation:fadeIn .4s ease forwards}
+  @keyframes fadeIn{to{opacity:1}}
+  .bar{transform-box:fill-box;transform-origin:bottom;animation:grow .65s cubic-bezier(.22,.8,.3,1) backwards}
+  @keyframes grow{from{transform:scaleY(0)}}
+  @media (prefers-reduced-motion:reduce){.line-anim,.area-anim,.pt,.bar{animation-duration:.001s!important;animation-delay:0s!important}}
+`;
+document.head.appendChild(extraCSS);
+
+/* ---------- generic chart scaffolding ---------- */
+function frame(W,H,M,yMax,yFmt,slice,yTitle){
+  let s = "";
+  const iw = W-M.l-M.r, ih = H-M.t-M.b;
+  const ticks = 4;
+  for(let t=0;t<=ticks;t++){
+    const v = yMax*t/ticks, y = M.t+ih - ih*t/ticks;
+    s += `<line class="${t===0?"zero":"gridline"}" x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}"/>`;
+    s += `<text class="axis-t" x="${M.l-8}" y="${y+4}" text-anchor="end">${yFmt(v)}</text>`;
+  }
+  const n = slice.length, step = Math.max(1, Math.ceil(n/8));
+  for(let i=0;i<n;i++){
+    if(i%step!==0 && i!==n-1) continue;
+    if(i!==n-1 && n-1-i < step*0.6) continue; /* avoid label collision at the end */
+    const x = M.l + iw*(n===1?0.5:(i+0.5)/n);
+    s += `<text class="axis-t" x="${x}" y="${H-10}" text-anchor="middle">${slice[i].label}</text>`;
+  }
+  s += `<text class="axis-title" x="${M.l}" y="${M.t-3}">${yTitle}</text>`;
+  return s;
+}
+function xy(slice,i,val,W,M,yMax,H){
+  const iw = W-M.l-M.r, ih = H-M.t-M.b, n = slice.length;
+  return [ M.l + iw*(n===1?0.5:(i+0.5)/n), M.t + ih - ih*(val/yMax) ];
+}
+
+function lineChart(elId, slice, getV, opts){
+  const W = opts.wide?960:560, H = opts.wide?300:250;
+  const M = {l:opts.ml||52, r:16, t:20, b:30};
+  const yMax = niceMax(Math.max(...slice.map(getV)) * 1.08);
+  const pts = slice.map((d,i)=>xy(slice,i,getV(d),W,M,yMax,H));
+  const line = pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+  const baseY = H-M.b;
+  const area = line + ` L ${pts[pts.length-1][0].toFixed(1)} ${baseY} L ${pts[0][0].toFixed(1)} ${baseY} Z`;
+  const gid = elId+"-g";
+  let dots = "";
+  slice.forEach((d,i)=>{
+    const p = pts[i];
+    dots += `<circle class="pt" style="animation-delay:${(0.2+0.7*i/slice.length).toFixed(2)}s" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${slice.length>14?2.4:3.2}" fill="${opts.color}"><title>${d.label}: ${opts.fmt(getV(d))}</title></circle>`;
+  });
+  const lastP = pts[pts.length-1], lastV = opts.fmt(getV(slice[slice.length-1]));
+  const lx = Math.min(lastP[0], W-M.r-6);
+  const svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${opts.aria}">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" style="stop-color:${opts.color};stop-opacity:.28"/>
+      <stop offset="1" style="stop-color:${opts.color};stop-opacity:.02"/>
+    </linearGradient></defs>
+    ${frame(W,H,M,yMax,opts.yFmt,slice,opts.yTitle)}
+    <path class="area-anim" d="${area}" fill="url(#${gid})"/>
+    <path class="line-path" d="${line}" stroke="${opts.color}" stroke-width="2.5" id="${elId}-line"/>
+    ${dots}
+    <text class="axis-t" x="${lx}" y="${Math.max(12,lastP[1]-10)}" text-anchor="end" font-weight="700" fill="${opts.color}">${lastV}</text>
+  </svg>`;
+  $(elId).innerHTML = svg;
+  const path = $(elId+"-line");
+  const len = path.getTotalLength();
+  path.style.strokeDasharray = len;
+  path.style.strokeDashoffset = len;
+  path.classList.add("line-anim");
+}
+
+function barChart(elId, slice){
+  const W = 560, H = 250, M = {l:44,r:12,t:20,b:30};
+  const iw = W-M.l-M.r, ih = H-M.t-M.b, n = slice.length;
+  const yMax = niceMax(Math.max(...slice.map(d=>Math.max(d.nw,d.ch)))*1.1);
+  const groupW = iw/n, bw = Math.min(14, groupW*0.32), gap = Math.min(3, groupW*0.08);
+  let bars = "";
+  slice.forEach((d,i)=>{
+    const cx = M.l + groupW*(i+0.5);
+    const hN = ih*d.nw/yMax, hC = ih*d.ch/yMax;
+    const delay = (0.15+0.5*i/n).toFixed(2);
+    bars += `<rect class="bar" style="animation-delay:${delay}s" x="${(cx-bw-gap/2).toFixed(1)}" y="${(M.t+ih-hN).toFixed(1)}" width="${bw.toFixed(1)}" height="${hN.toFixed(1)}" rx="2.5" fill="var(--new)"><title>${d.label}: ${d.nw} new</title></rect>`;
+    bars += `<rect class="bar" style="animation-delay:${delay}s" x="${(cx+gap/2).toFixed(1)}" y="${(M.t+ih-hC).toFixed(1)}" width="${bw.toFixed(1)}" height="${hC.toFixed(1)}" rx="2.5" fill="var(--churn)"><title>${d.label}: ${d.ch} churned</title></rect>`;
+  });
+  $(elId).innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="New versus churned customers per month">
+    ${frame(W,H,M,yMax,v=>Math.round(v),slice,"CUSTOMERS / MONTH")}${bars}</svg>`;
+}
+
+/* ---------- KPIs ---------- */
+function renderKPIs(slice){
+  const last = DATA[DATA.length-1], prev = DATA[DATA.length-2];
+  const n = slice.length, first = slice[0];
+
+  /* Current MRR */
+  $("kpiMrr").textContent = fmtMoney(last.mrr);
+  const mrrMoM = (last.mrr-prev.mrr)/prev.mrr*100;
+  $("kpiMrrDelta").innerHTML = deltaHTML(mrrMoM, true, pct(mrrMoM), "MoM (+"+fmtMoney(last.mrr-prev.mrr).slice(1)+" $)").replace("$)",")").replace("(+","(+$");
+  $("kpiMrrDelta").innerHTML = deltaHTML(mrrMoM, true, pct(mrrMoM)+" MoM", "+"+fmtMoney(last.mrr-prev.mrr));
+  const mrrRange = (last.mrr-first.mrr)/first.mrr*100;
+  $("kpiMrrRange").textContent = pct(mrrRange) + " over last " + n + " months";
+
+  /* Total customers (net adds since Jul 2024) */
+  $("kpiCust").textContent = fmtNum(last.custEnd);
+  const custMoM = (last.custEnd-prev.custEnd)/prev.custEnd*100;
+  $("kpiCustDelta").innerHTML = deltaHTML(custMoM, true, pct(custMoM)+" MoM", "+"+(last.custEnd-prev.custEnd));
+  const added = last.custEnd - first.custStart;
+  $("kpiCustRange").textContent = "+" + fmtNum(added) + " net over last " + n + " months";
+
+  /* Net new this month */
+  const net = last.nw-last.ch, netPrev = prev.nw-prev.ch;
+  $("kpiNet").textContent = "+"+net;
+  const netD = net-netPrev;
+  $("kpiNetDelta").innerHTML = deltaHTML(netD, true, (netD>=0?"+":"")+netD+" vs May", "(74 new − 18 churned)");
+  const avgNet = slice.reduce((a,d)=>a+(d.nw-d.ch),0)/n;
+  $("kpiNetRange").textContent = "avg +" + avgNet.toFixed(1) + "/mo over last " + n + " months";
+
+  /* Churn rate (monthly logo churn) */
+  $("kpiChurn").textContent = last.churnRate.toFixed(2)+"%";
+  const chD = last.churnRate-prev.churnRate;
+  $("kpiChurnDelta").innerHTML = deltaHTML(chD, false, (chD>=0?"+":"")+chD.toFixed(2)+" pp MoM", "18 of 801 lost");
+  const avgChurn = slice.reduce((a,d)=>a+d.churnRate,0)/n;
+  $("kpiChurnRange").textContent = "avg " + avgChurn.toFixed(2) + "%/mo over last " + n + " months";
+}
+
+/* ---------- render ---------- */
+function renderAll(range){
+  const slice = DATA.slice(DATA.length-range);
+  const first = slice[0], last = slice[slice.length-1];
+  renderKPIs(slice);
+
+  const span = first.label + " – " + last.label;
+  $("mrrDesc").textContent = span + " · " + fmtMoney(first.mrr) + " → " + fmtMoney(last.mrr) +
+    " (" + pct((last.mrr-first.mrr)/first.mrr*100) + ")";
+  lineChart("chartMrr", slice, d=>d.mrr, {
+    wide:true, color:"var(--accent)", fmt:fmtMoney, yFmt:fmtK,
+    yTitle:"MRR (USD)", ml:56, aria:"Monthly recurring revenue over time"
+  });
+
+  const totNew = slice.reduce((a,d)=>a+d.nw,0), totCh = slice.reduce((a,d)=>a+d.ch,0);
+  $("custDesc").textContent = span + " · " + fmtNum(totNew) + " added, " + fmtNum(totCh) +
+    " churned (net +" + fmtNum(totNew-totCh) + ")";
+  barChart("chartCust", slice);
+
+  const totTk = slice.reduce((a,d)=>a+d.tk,0);
+  const peak = slice.reduce((a,d)=>d.tk>a.tk?d:a, slice[0]);
+  $("tickDesc").textContent = span + " · " + fmtNum(totTk) + " total · peak " + peak.tk + " in " + peak.label;
+  lineChart("chartTickets", slice, d=>d.tk, {
+    wide:false, color:"var(--tickets)", fmt:v=>v+" tickets", yFmt:v=>Math.round(v),
+    yTitle:"TICKETS / MONTH", ml:44, aria:"Support tickets per month"
+  });
+}
+
+/* ---------- controls ---------- */
+let currentRange = 12;
+document.querySelectorAll(".seg button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const r = Number(btn.dataset.range);
+    if(r===currentRange) return;
+    currentRange = r;
+    document.querySelectorAll(".seg button").forEach(b=>b.setAttribute("aria-pressed", b===btn ? "true":"false"));
+    renderAll(r);
+  });
+});
+
+const root = document.documentElement, themeBtn = $("themeBtn");
+function setTheme(dark){
+  root.setAttribute("data-theme", dark ? "dark":"light");
+  themeBtn.textContent = dark ? "☀️" : "🌙";
+}
+setTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+themeBtn.addEventListener("click", ()=> setTheme(root.getAttribute("data-theme")!=="dark"));
+
+renderAll(currentRange);
+</script>
+</body>
+</html>

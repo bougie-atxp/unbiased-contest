@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contest #004 — The Bill Teardown · four AIs audit the same $21K AI bill · unbiased.ai</title>
+<meta name="description" content="We handed four AIs the same $21,419 AI bill and said: find the waste. The best audit cost under a dime and found $10,777/mo. Guess which auditor billed the most.">
+<meta property="og:title" content="Four AIs audited the same $21K AI bill. The best one cost under a dime.">
+<meta property="og:description" content="Same invoice, four models, one shot each. Two found every dollar of waste; two missed the biggest lever. Guess which audit ran up the biggest bill.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23101112'/%3E%3Cpath d='M16 7v18M9 12h14M10.5 12l-2.8 5.4a3.4 3.4 0 006.6 0L11.5 12M21.5 12l-2.8 5.4a3.4 3.4 0 006.6 0L22.5 12' stroke='%23FAFAF7' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAFAF7;--card:#FFFFFF;--ink:#101112;--body:#3D3F42;--muted:#71757C;--line:#E8E6E0;
+  --em:#0E9F6E;--em-deep:#0B7D57;--em-soft:#EAF7F1;--amber:#B45309;--amber-soft:#FBF4E9;
+  --miss:#C0362C;--miss-soft:#FBECEA;
+  --r:14px;--shadow:0 1px 2px rgba(16,17,18,.04),0 8px 24px -12px rgba(16,17,18,.10);
+  --shadow-lift:0 2px 4px rgba(16,17,18,.05),0 20px 44px -16px rgba(16,17,18,.18);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:clip}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:'Space Grotesk',Inter,sans-serif;letter-spacing:-.025em;line-height:1.08}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+a{color:inherit}
+.rev{opacity:0;transform:translateY(10px);transition:opacity .55s ease,transform .55s ease}
+.rev.in{opacity:1;transform:none}
+
+header{position:sticky;top:0;z-index:50;background:rgba(250,250,247,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.hbar{display:flex;align-items:center;justify-content:space-between;height:60px}
+.mark{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16.5px}
+.mark .glyph{width:26px;height:26px;border-radius:7px;background:var(--ink);display:grid;place-items:center;flex:none}
+.hmeta{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted);font-weight:500}
+.pill{border:1px solid var(--line);border-radius:99px;padding:4px 12px;background:var(--card);white-space:nowrap}
+
+.hero{padding:58px 0 8px;position:relative}
+.hero::before{content:"";position:absolute;top:-30px;right:-40px;width:480px;height:440px;max-width:60vw;background:radial-gradient(closest-side,rgba(14,159,110,.11),transparent);pointer-events:none;z-index:-1}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--em-deep);margin-bottom:20px}
+.eyebrow::before{content:"";width:18px;height:1.5px;background:var(--em)}
+.hero h1{font-size:clamp(33px,4.7vw,55px);max-width:960px}
+.hero h1 .em{color:var(--em-deep)}
+.hero .dek{margin-top:20px;font-size:17px;color:var(--body);max-width:690px}
+
+.invoicechip{display:inline-flex;align-items:center;gap:10px;margin-top:20px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:9px 15px;box-shadow:var(--shadow);font-size:13.5px;color:var(--body);font-weight:500}
+.invoicechip b{font-family:'Space Grotesk',Inter,sans-serif;color:var(--ink);font-size:15px}
+.invoicechip .dot{width:6px;height:6px;border-radius:50%;background:var(--amber)}
+
+.quiz{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:30px}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;display:block;transition:transform .2s,box-shadow .2s,border-color .2s;position:relative;cursor:pointer}
+.qcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift)}
+.qcard.guess{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink),var(--shadow)}
+.qcard.hi{border-color:var(--amber);box-shadow:0 0 0 2px var(--amber),var(--shadow-lift)}
+.qcard.lo{border-color:var(--em);box-shadow:0 0 0 2px var(--em),var(--shadow-lift)}
+.qhead{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px}
+.qname{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:9px}
+.qname .lbl{width:24px;height:24px;border-radius:7px;background:#F1EFE9;color:var(--muted);display:grid;place-items:center;font-size:13px;font-weight:800}
+.qtag{font-size:9.5px;font-weight:800;letter-spacing:.05em;padding:4px 8px;border-radius:6px;color:#fff;opacity:0;transform:translateY(-3px);transition:opacity .35s,transform .35s;box-shadow:0 2px 8px rgba(0,0,0,.18);white-space:nowrap}
+.qtag.show{opacity:1;transform:none}
+.qtag.amber{background:var(--amber)} .qtag.em{background:var(--em)}
+.qbody{padding:0 14px 14px}
+.qfound{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:clamp(20px,2.3vw,25px);letter-spacing:-.02em;line-height:1.05}
+.qfound .mo{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:0}
+.qissues{font-size:12.5px;color:var(--body);margin-top:9px;display:flex;align-items:center;gap:7px}
+.qdots{display:inline-flex;gap:3px}
+.qdots i{width:8px;height:8px;border-radius:50%;background:var(--em);display:inline-block}
+.qdots i.off{background:#E3E1DB}
+.qprice{margin-top:12px;padding-top:11px;border-top:1px solid #F1EFE9;display:flex;align-items:baseline;justify-content:space-between}
+.qprice .k{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.qprice .v{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:16px;color:var(--muted);letter-spacing:.06em}
+.qcard.revealed .qprice .v{letter-spacing:0}
+.quizbar{display:flex;align-items:center;gap:16px;margin-top:20px;flex-wrap:wrap}
+.revealbtn{background:var(--ink);color:#fff;border:none;border-radius:11px;padding:13px 22px;font:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:background .15s}
+.revealbtn:hover{background:#000}
+.revealbtn:disabled{opacity:.45;cursor:default}
+.punch{font-size:14px;color:var(--body);font-weight:500;line-height:1.5;max-width:640px}
+.punch b{color:var(--ink)}
+
+.sec{padding:74px 0 0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
+.stat .v{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:clamp(20px,2.2vw,26px)}
+.stat .l{font-size:12px;color:var(--muted);font-weight:500;margin-top:3px;min-height:2.5em}
+.stat .v.em{color:var(--em-deep)} .stat .v.am{color:var(--amber)}
+
+.gapgrid{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center;margin-top:24px}
+.gaptext h2{font-size:25px;margin-bottom:14px}
+.gaptext p{font-size:15px;color:var(--body);margin-bottom:12px}
+.gaptext .lede{font-weight:600;color:var(--ink)}
+.gaptext .pareto{margin-top:16px;border-left:3px solid var(--em);padding:4px 0 4px 16px;font-size:15px;color:var(--body)}
+.gaptext .pareto b{color:var(--em-deep)}
+.scalecard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-lift);padding:22px 24px}
+.scalecard .sc-t{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:13px}
+.seg{display:inline-flex;background:#F1EFE9;border-radius:10px;padding:3px;gap:2px;margin-bottom:16px}
+.seg button{border:none;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--muted);padding:7px 13px;border-radius:8px;cursor:pointer;transition:color .15s}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.09)}
+.sc-row{display:flex;align-items:baseline;justify-content:space-between;padding:8px 0}
+.sc-row .k{font-size:13.5px;color:var(--body)}
+.sc-row .v{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:19px}
+.sc-gap{margin-top:12px;padding-top:16px;border-top:1px solid var(--line)}
+.sc-gap .lbl{font-size:12px;color:var(--muted);font-weight:600}
+.sc-gap .big{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:clamp(30px,4vw,40px);color:var(--em-deep);letter-spacing:-.02em;line-height:1.04;margin-top:3px}
+.sc-gap .yr{font-size:13px;color:var(--muted);margin-top:4px}
+.sc-foot{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.55}
+
+.prompt{margin:0;background:#141517;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.prompt .ptop{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.prompt .lbl{font-size:11px;font-weight:700;letter-spacing:.13em;color:#8BE3C3;text-transform:uppercase}
+.prompt .copy{font-size:12px;color:#9FA3AA;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:Inter,sans-serif}
+.prompt .copy:hover{color:#fff}
+.prompt pre{padding:20px 22px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;line-height:1.8;color:#C9CCC6;white-space:pre-wrap}
+.prompt pre b{color:#fff;font-weight:500}
+
+.sechead{max-width:720px;margin-bottom:22px}
+.sechead .k{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--em-deep);margin-bottom:10px}
+.sechead h2{font-size:clamp(24px,3vw,30px)}
+.sechead p{font-size:15px;color:var(--body);margin-top:12px}
+
+/* findings matrix */
+.matrix{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.mtable{width:100%;border-collapse:collapse}
+.mtable th,.mtable td{padding:13px 14px;border-bottom:1px solid #F1EFE9;text-align:left;vertical-align:middle}
+.mtable tr:last-child td{border-bottom:none}
+.mtable thead th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;background:#FBFBF9}
+.mtable th.c,.mtable td.c{text-align:center;width:64px}
+.mtable .issue{font-size:13.5px;font-weight:600;color:var(--ink)}
+.mtable .issue .sub{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px;letter-spacing:0}
+.mtable .amt{font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:14px;text-align:right;white-space:nowrap}
+.mtable td.amt{color:var(--ink)}
+.chk{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;font-size:13px;font-weight:800}
+.chk.y{background:var(--em-soft);color:var(--em-deep)}
+.chk.n{background:var(--miss-soft);color:var(--miss)}
+.mtable tfoot td{border-top:1px solid var(--line);border-bottom:none;font-weight:700;font-size:13px;background:#FBFBF9}
+.mtable tfoot .lbl{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.mtable tfoot .score{font-family:'Space Grotesk',Inter,sans-serif;font-size:15px}
+.mlegend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--muted)}
+.mlegend span{display:inline-flex;align-items:center;gap:7px}
+.mlegend .chk{width:20px;height:20px;font-size:11px}
+
+.precision{margin-top:26px;display:grid;grid-template-columns:1.15fr .85fr;gap:20px;align-items:stretch}
+.precard{background:var(--em-soft);border:1px solid #CDEBDD;border-radius:var(--r);padding:22px 24px}
+.precard h3{font-size:18px;color:var(--em-deep);margin-bottom:10px}
+.precard p{font-size:14px;color:var(--body)}
+.precard p b{color:var(--ink)}
+.decoycard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px 24px}
+.decoycard .t{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.decoycard ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.decoycard li{font-size:13px;color:var(--body);display:flex;gap:9px;line-height:1.45}
+.decoycard li .x{color:var(--miss);font-weight:800;flex:none}
+.decoycard li b{color:var(--ink)}
+
+/* quote cards */
+.quotes{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:24px}
+.quote{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px 24px;display:flex;flex-direction:column}
+.quote .qh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.quote .who{display:flex;align-items:center;gap:9px;font-weight:700;font-size:13.5px}
+.quote .who .lbl{width:24px;height:24px;border-radius:7px;background:#F1EFE9;color:var(--muted);display:grid;place-items:center;font-size:12px;font-weight:800}
+.quote .badge{font-size:9.5px;font-weight:800;letter-spacing:.05em;padding:3px 8px;border-radius:6px}
+.quote .badge.won{background:var(--em-soft);color:var(--em-deep)}
+.quote .badge.miss{background:var(--miss-soft);color:var(--miss)}
+.quote blockquote{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;line-height:1.65;color:var(--body);border-left:2px solid var(--line);padding-left:14px;margin:0}
+.quote blockquote b{color:var(--ink);font-weight:500}
+.quote .cap{font-size:12px;color:var(--muted);margin-top:13px}
+.quote .cap b{color:var(--ink)}
+
+/* receipts */
+.receipts{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.receipts .rtop{padding:20px 24px 4px}
+.receipts .rtop .t{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.receipts .rtop p{font-size:13px;color:var(--muted);line-height:1.55;max-width:640px}
+table.rt{width:100%;border-collapse:collapse;font-size:13.5px}
+table.rt th{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:left;padding:14px 14px 10px;border-bottom:1px solid var(--line);font-weight:600}
+table.rt th.r,table.rt td.r{text-align:right}
+table.rt td{padding:13px 14px;border-bottom:1px solid #F1EFE9;vertical-align:middle}
+table.rt tr:last-child td{border-bottom:none}
+table.rt td .tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.08em;border-radius:5px;padding:2px 7px;margin-left:7px;vertical-align:1px}
+table.rt td .tag.lo{background:var(--em-soft);color:var(--em-deep)}
+table.rt td .tag.hi{background:var(--amber-soft);color:var(--amber)}
+table.rt .aud{font-weight:700}
+table.rt .foundcol{color:var(--body)}
+.rfine{font-size:11.5px;color:var(--muted);padding:14px 24px 20px;line-height:1.6}
+
+/* pareto callout */
+.answer{margin-top:26px;background:linear-gradient(180deg,#F4FBF7,#EAF7F1);border:1px solid #CDEBDD;border-radius:18px;padding:36px 38px;position:relative;overflow:hidden}
+.answer::after{content:"";position:absolute;right:-90px;bottom:-90px;width:280px;height:280px;border-radius:50%;background:radial-gradient(closest-side,rgba(14,159,110,.18),transparent);pointer-events:none}
+.answer .k{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--em-deep);margin-bottom:14px;position:relative}
+.answer h2{font-size:clamp(23px,2.9vw,30px);max-width:720px;position:relative}
+.answer h2 .em{color:var(--em-deep)}
+.answer p{font-size:15px;color:var(--body);margin-top:14px;max-width:680px;position:relative}
+.answer p b{color:var(--ink)}
+.answer .selfnote{margin-top:16px;font-size:13px;color:var(--em-deep);font-weight:600;position:relative}
+
+.method{margin-top:24px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.mcell{border:1px dashed var(--line);border-radius:var(--r);padding:16px 18px;background:rgba(255,255,255,.5)}
+.mcell h4{font-size:12.5px;font-weight:700;margin-bottom:5px}
+.mcell p{font-size:12px;color:var(--muted);line-height:1.6}
+.mnote{margin-top:14px;font-size:12px;color:var(--muted);line-height:1.65;border-left:3px solid var(--line);padding-left:14px;max-width:820px}
+.mnote b{color:var(--body)}
+
+.cta{background:var(--ink);border-radius:18px;color:#fff;padding:52px 48px;margin:76px 0 0;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px;position:relative;overflow:hidden}
+.cta::after{content:"";position:absolute;right:-120px;top:-120px;width:340px;height:340px;border-radius:50%;background:radial-gradient(closest-side,rgba(14,159,110,.35),transparent)}
+.cta h2{font-size:28px;max-width:560px;position:relative;z-index:1}
+.cta p{color:#ABAEA9;font-size:14.5px;margin-top:10px;max-width:520px;position:relative;z-index:1}
+.btns{display:flex;gap:12px;flex-wrap:wrap;position:relative;z-index:1}
+.btn{display:inline-block;padding:14px 24px;border-radius:11px;font-weight:600;font-size:15px;text-decoration:none}
+.btn.primary{background:var(--em);color:#fff}
+.btn.primary:hover{background:var(--em-deep)}
+.btn.ghost{border:1px solid #3A3B3D;color:#fff}
+.btn.ghost:hover{border-color:#5A5B5D}
+footer{margin-top:48px;padding:26px 0 54px;color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;border-top:1px solid var(--line)}
+footer a{color:var(--em-deep);font-weight:600;text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+@media(max-width:1020px){
+  .quiz{grid-template-columns:repeat(2,1fr)}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .method{grid-template-columns:repeat(2,1fr)}
+  .gapgrid{grid-template-columns:1fr;gap:26px}
+  .precision{grid-template-columns:1fr}
+  .quotes{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .quiz{grid-template-columns:1fr 1fr;gap:10px}
+  .hero{padding-top:46px}.hero::before{display:none}
+  .hmeta .pill.date{display:none}
+  .cta{padding:38px 26px}
+  .method{grid-template-columns:1fr}
+  .answer{padding:28px 24px}
+  .qhead{padding:10px 11px 8px}.qbody{padding:0 11px 12px}
+  .qname{font-size:12.5px}.qname .lbl{width:21px;height:21px}
+  .mtable th,.mtable td{padding:10px 8px}
+  .mtable .issue{font-size:12px}.mtable .issue .sub{display:none}
+  .mtable th.c,.mtable td.c{width:34px}
+  .mtable .amt{font-size:12px}
+  table.rt th,table.rt td{padding-left:9px;padding-right:9px;font-size:12.5px}
+  .receipts .rtop{padding:18px 18px 2px}
+  .quote{padding:18px 18px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap hbar">
+    <div class="mark"><span class="glyph"><svg width="16" height="16" viewBox="0 0 32 32" fill="none"><path d="M16 7v18M9 12h14M10.5 12l-2.8 5.4a3.4 3.4 0 006.6 0L11.5 12M21.5 12l-2.8 5.4a3.4 3.4 0 006.6 0L22.5 12" stroke="#FAFAF7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>unbiased.ai</div>
+    <div class="hmeta"><span class="pill">Contest #004</span><span class="pill date">Ran 2026-07-04</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+<section class="hero">
+  <div class="eyebrow">Contest #004 · The Bill Teardown · Four models, one invoice</div>
+  <h1>We handed four AIs the same $21K AI bill<br>and said: <span class="em">find the waste</span>.</h1>
+  <p class="dek">One month of a real-shaped AI invoice — 18 line items, six planted problems, a fistful of look-alike decoys. Same prompt, four models, one shot each. We stripped the labels off the audits. Guess which auditor ran up the biggest bill of its own — then see what each one actually caught.</p>
+  <div class="invoicechip"><span class="dot"></span>The invoice under audit: <b class="num">$21,419.12</b> / month</div>
+  <div class="quiz" id="quiz">
+    <div class="qcard" data-key="a" data-cost="0.0965" data-found="6" data-waste="10,777">
+      <div class="qhead"><span class="qname"><span class="lbl">A</span>Auditor A</span><span class="qtag"></span></div>
+      <div class="qbody">
+        <div class="qfound">$10,777<span class="mo">/mo waste found</span></div>
+        <div class="qissues"><span class="qdots"><i></i><i></i><i></i><i></i><i></i><i></i></span>6 of 6 real issues</div>
+        <div class="qprice"><span class="k">Cost of this audit</span><span class="v">$•.••••</span></div>
+      </div>
+    </div>
+    <div class="qcard" data-key="b" data-cost="0.1940" data-found="5" data-waste="6,915">
+      <div class="qhead"><span class="qname"><span class="lbl">B</span>Auditor B</span><span class="qtag"></span></div>
+      <div class="qbody">
+        <div class="qfound">$6,915<span class="mo">/mo waste found</span></div>
+        <div class="qissues"><span class="qdots"><i></i><i></i><i></i><i></i><i></i><i class="off"></i></span>5 of 6 real issues</div>
+        <div class="qprice"><span class="k">Cost of this audit</span><span class="v">$•.••••</span></div>
+      </div>
+    </div>
+    <div class="qcard" data-key="c" data-cost="0.0786" data-found="6" data-waste="10,777">
+      <div class="qhead"><span class="qname"><span class="lbl">C</span>Auditor C</span><span class="qtag"></span></div>
+      <div class="qbody">
+        <div class="qfound">$10,777<span class="mo">/mo waste found</span></div>
+        <div class="qissues"><span class="qdots"><i></i><i></i><i></i><i></i><i></i><i></i></span>6 of 6 real issues</div>
+        <div class="qprice"><span class="k">Cost of this audit</span><span class="v">$•.••••</span></div>
+      </div>
+    </div>
+    <div class="qcard" data-key="d" data-cost="0.0426" data-found="5" data-waste="6,915">
+      <div class="qhead"><span class="qname"><span class="lbl">D</span>Auditor D</span><span class="qtag"></span></div>
+      <div class="qbody">
+        <div class="qfound">$6,915<span class="mo">/mo waste found</span></div>
+        <div class="qissues"><span class="qdots"><i></i><i></i><i></i><i></i><i></i><i class="off"></i></span>5 of 6 real issues</div>
+        <div class="qprice"><span class="k">Cost of this audit</span><span class="v">$•.••••</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="quizbar"><button class="revealbtn" id="revealBtn">Reveal the audit bills →</button><span class="punch" id="punch">Two auditors found all six planted problems; two missed the biggest one. But which one charged the most to do the work? Guess first — then reveal.</span></div>
+</section>
+
+<section class="sec" id="gap">
+  <div class="stats rev">
+    <div class="stat"><div class="v em num" data-settle="0.0786" data-prefix="$" data-dp="4">$0.0786</div><div class="l">The cheapest audit that still found all 6 issues</div></div>
+    <div class="stat"><div class="v am num" data-settle="0.194" data-prefix="$" data-dp="3">$0.194</div><div class="l">The priciest audit — and it found only 5 of 6</div></div>
+    <div class="stat"><div class="v num">$10,777<span style="font-size:.6em;color:var(--muted);font-weight:600">/mo</span></div><div class="l">Waste the best audits surfaced — 50% of the invoice</div></div>
+    <div class="stat"><div class="v num">137,000×</div><div class="l">What the best audit returned per dollar it cost to run</div></div>
+  </div>
+  <div class="gapgrid rev">
+    <div class="gaptext">
+      <h2>The best audit cost eight cents and found half the bill was waste.</h2>
+      <p class="lede">$0.0786 in, $10,777 per month out. That is the entire pitch for reading your own bill with the right model.</p>
+      <p>Annualize it. Six planted problems, $10,777/mo of live spend — that's <b>$129,324 a year</b> hiding in one month's invoice. The audit that surfaced it cost less than a tenth of a cent per dollar recovered. The most expensive audit in the field charged 2.5× as much and still walked past the single biggest lever.</p>
+      <div class="pareto"><b>Price of the audit tells you nothing about the quality of the audit.</b> The cheapest run and the most expensive run tied on score. So the only sane move is to route to whichever model does the job for the least — which is the whole idea behind Pareto.</div>
+    </div>
+    <div class="scalecard">
+      <div class="sc-t">Annualize the waste the best audit found</div>
+      <div class="seg" id="seg">
+        <button data-v="1">1 month</button>
+        <button data-v="12" class="on">1 year</button>
+        <button data-v="36">3 years</button>
+      </div>
+      <div class="sc-row"><span class="k">Waste left on the table (current spend)</span><span class="v num am" id="scHigh" style="color:var(--amber)">$129,324</span></div>
+      <div class="sc-row"><span class="k">Recoverable after the recommended fixes</span><span class="v num" id="scLow" style="color:var(--em-deep)">$117,050</span></div>
+      <div class="sc-gap"><span class="lbl">All of it surfaced by one audit that cost</span><div class="big num" id="scGap">$0.0786</div><div class="yr num" id="scYr">a return of ~137,000× on the run</div></div>
+      <div class="sc-foot">$10,777/mo current waste · $9,754/mo recoverable after fixes, from the key. Six real issues on Meridian Desk's June invoice; your real mix varies. Finding your mix is exactly what the free teardown does.</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="prompt rev" id="prompt">
+    <div class="ptop"><span class="lbl">The prompt — identical for all four</span><button class="copy" id="copyBtn">Copy</button></div>
+    <pre id="promptText">You are a FinOps auditor. Here is one month of a company's AI usage: an <b>$21,419.12 invoice</b> and an 18-row aggregated request log (API key, model, volume, tokens, cache-read %, notes).
+
+Find the <b>waste</b> — line items where the company is overpaying for the result it needs. For each finding, name the <b>mechanism</b>, cite the <b>row(s)</b>, and estimate the <b>dollars per month</b>. Do not flag correct, right-sized spend. Return a prioritized teardown.</pre>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sechead rev">
+    <div class="k">The scorecard</div>
+    <h2>Six real problems were planted in the log. Here's who caught what.</h2>
+    <p>Every finding had to name the mechanism, cite the row, and land a dollar figure within 40% of truth to count. Green check = caught it. Red = walked past it.</p>
+  </div>
+  <div class="matrix rev">
+    <table class="mtable">
+      <thead>
+        <tr><th>Planted problem</th><th class="r">Monthly waste</th><th class="c">A</th><th class="c">B</th><th class="c">C</th><th class="c">D</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="issue">Frontier model on a nightly classification cron<span class="sub">gpt-5.5 emitting a 10-token label, ~50k calls/day — a nano job</span></td>
+          <td class="amt">$3,862/mo</td>
+          <td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk n">✕</span></td><td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk n">✕</span></td>
+        </tr>
+        <tr>
+          <td class="issue">Responder resends a 12K system prompt uncached<span class="sub">0% cache read on a prompt its twin row caches at 92%</span></td>
+          <td class="amt">$2,902/mo</td>
+          <td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td>
+        </tr>
+        <tr>
+          <td class="issue">Duplicate retries from a 28s timeout<span class="sub">~8% same-payload dupes auto-retried against another endpoint</span></td>
+          <td class="amt">$979/mo</td>
+          <td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td>
+        </tr>
+        <tr>
+          <td class="issue">Staging key hitting the paid frontier model 24/7<span class="sub">synthetic keepalive on claude-opus-4.8 — never customer traffic</span></td>
+          <td class="amt">$1,125/mo</td>
+          <td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td>
+        </tr>
+        <tr>
+          <td class="issue">Summarizer writing 3,400 tokens the UI throws away<span class="sub">output truncated to ~75 tokens before display — 98% discarded</span></td>
+          <td class="amt">$1,323/mo</td>
+          <td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td>
+        </tr>
+        <tr>
+          <td class="issue">Embeddings reindex for a feature sunset in April<span class="sub">100k/day reindex of an index that's never queried anymore</span></td>
+          <td class="amt">$585/mo</td>
+          <td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td><td class="c"><span class="chk y">✓</span></td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td><span class="lbl">Found</span></td>
+          <td class="amt lbl" style="text-align:right">out of 6</td>
+          <td class="c score" style="color:var(--em-deep)">6</td>
+          <td class="c score" style="color:var(--miss)">5</td>
+          <td class="c score" style="color:var(--em-deep)">6</td>
+          <td class="c score" style="color:var(--miss)">5</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <div class="mlegend">
+    <span><span class="chk y">✓</span> caught it (mechanism + row + $ within 40%)</span>
+    <span><span class="chk n">✕</span> missed it</span>
+    <span>Both misses landed on the same row — the $3,862 frontier cron.</span>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="precision rev">
+    <div class="precard">
+      <h3>The honest part: nobody hallucinated waste.</h3>
+      <p>We salted the log with <b>seven decoy rows</b> — line items engineered to look wasteful but that are actually correct: a big responder that <i>is</i> cached, the priciest model doing genuinely hard escalations, high-volume nano jobs that are already right-sized. Flagging any of them as waste would be a false positive.</p>
+      <p><b>All four auditors held the line.</b> Zero decoys claimed, across the board — every model scored 1.0 precision. The gap between them wasn't over-claiming; it was whether they had the nerve to call the biggest lever without a replacement model spelled out for them.</p>
+    </div>
+    <div class="decoycard">
+      <div class="t">Decoys that stayed unflagged</div>
+      <ul>
+        <li><span class="x">✕</span><span><b>The cached twin.</b> Same 12K prompt as the wasteful row — but at 92% cache read. Correct, not waste.</span></li>
+        <li><span class="x">✕</span><span><b>Frontier model on hard escalations.</b> The priciest model, but on 700/day genuinely escalated tickets at 70% cache. Justified.</span></li>
+        <li><span class="x">✕</span><span><b>Volume ≠ waste.</b> 90k–130k/day on nano models with tiny tokens and high cache. Cheap and right.</span></li>
+        <li><span class="x">✕</span><span><b>The live reindex.</b> Same shape as the sunset job — but this index is still queried. Legit.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sechead rev">
+    <div class="k">In their own words</div>
+    <h2>The sharpest line from each blind auditor.</h2>
+    <p>Verbatim from the run. Two nailed the frontier-cron lever; two wrote a tight finding but left the biggest dollar on the table.</p>
+  </div>
+  <div class="quotes rev">
+    <div class="quote">
+      <div class="qh"><span class="who"><span class="lbl">A</span>Auditor A</span><span class="badge won">FOUND ALL 6</span></div>
+      <blockquote>R02: 12,000-token static system prompt resent uncached. R02 bills at 0% cache-read while R07 hits 92% on the <b>same</b> prompt. This is a config bug, not a different workload. <b>Savings: $2,272.86</b> — the row is paying ~4.6× what R07 pays per identical prompt.</blockquote>
+      <div class="cap">Reconciled all 18 rows to the invoice <b>to the penny</b> before auditing, then named the $3,720/mo frontier cron as the single biggest lever.</div>
+    </div>
+    <div class="quote">
+      <div class="qh"><span class="who"><span class="lbl">C</span>Auditor C</span><span class="badge won">FOUND ALL 6</span></div>
+      <blockquote>R01 classification cron: 50,000/day, 910 prompt tok, 10 completion tok — a single class label — 0% cache, on the most expensive general model. <b>= $3,862.50/mo</b>. Moved to nano (same tokens) = $142.50/mo, saving <b>~$3,720/mo</b>. R08 and R12 already run this class of job on nano.</blockquote>
+      <div class="cap">Most rigorous arithmetic in the field — <b>self-corrected its own draft numbers mid-answer</b> and protected every decoy explicitly.</div>
+    </div>
+    <div class="quote">
+      <div class="qh"><span class="who"><span class="lbl">B</span>Auditor B</span><span class="badge miss">MISSED THE BIG ONE</span></div>
+      <blockquote>R04 — staging synthetic keepalive on production frontier model, <b>$1,125.00/month</b>. A staging/test key sending synthetic keepalive traffic to the most expensive listed model. 100% waste.</blockquote>
+      <div class="cap">Clean, exact, zero hallucinations — but <b>declined the $3,862 cron</b> for want of a spelled-out replacement, landing a $6.1k answer instead of $9.8k.</div>
+    </div>
+    <div class="quote">
+      <div class="qh"><span class="who"><span class="lbl">D</span>Auditor D</span><span class="badge miss">MISSED THE BIG ONE</span></div>
+      <blockquote>R02: Uncached Support-Chat Responder — <b>$2,272.86/month</b>. Resends a 12,000-token static system prompt at cache_read 0%. If it cached at 92% like R07, its input rate drops from $3.00/M to $0.528/M. The delta is the waste.</blockquote>
+      <div class="cap">The <b>cheapest run in the whole field</b> — matched the priciest auditor's exact score and headline for a quarter of the cost. Same one blind spot: the frontier cron.</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="receipts rev">
+    <div class="rtop">
+      <div class="t">The receipts</div>
+      <p>What each blind audit cost to run, cheapest to priciest. Two auditors found every dollar of waste; two found five of six — and the price of the audit didn't track the quality of the audit at all.</p>
+    </div>
+    <table class="rt">
+      <thead><tr><th>Auditor</th><th class="r">Issues found</th><th class="r">Waste surfaced</th><th class="r">Cost to run</th><th class="r">vs cheapest</th></tr></thead>
+      <tbody>
+        <tr><td class="aud">Auditor D<span class="tag lo">CHEAPEST</span></td><td class="r num foundcol">5 of 6</td><td class="r num">$6,915/mo</td><td class="r num" style="color:var(--em-deep);font-weight:700">$0.0426</td><td class="r num">1×</td></tr>
+        <tr><td class="aud">Auditor C</td><td class="r num foundcol">6 of 6</td><td class="r num">$10,777/mo</td><td class="r num" style="font-weight:700">$0.0786</td><td class="r num">1.8×</td></tr>
+        <tr><td class="aud">Auditor A</td><td class="r num foundcol">6 of 6</td><td class="r num">$10,777/mo</td><td class="r num">$0.0965</td><td class="r num">2.3×</td></tr>
+        <tr><td class="aud">Auditor B<span class="tag hi">PRICIEST</span></td><td class="r num foundcol">5 of 6</td><td class="r num">$6,915/mo</td><td class="r num" style="color:var(--amber);font-weight:700">$0.1940</td><td class="r num">4.6×</td></tr>
+      </tbody>
+    </table>
+    <p class="rfine">Four leading models ran these audits — Claude Fable 5, Claude Opus 4.8, GPT-5.5, and one more. We're not telling you which auditor is which, on purpose. Note the shape: the priciest run (4.6× the cheapest) tied for the <i>lowest</i> score, and the cheapest run matched it dollar-for-dollar. Paying more bought nothing here.</p>
+  </div>
+
+  <div class="answer rev">
+    <div class="k">The answer isn't picking a model</div>
+    <h2>It's <span class="em">routing</span> — always sending the job to the cheapest model that clears the bar.</h2>
+    <p>Two of these four found all six issues. One of the two cost 2.5× less than the priciest run that found fewer. If you'd hard-coded to a brand name, you had a coin-flip chance of buying the worse audit for more money. <b>Routing removes the coin flip.</b> Pareto sends each job to the cheapest model that clears your quality bar and hands you one endpoint — you land on the low number without giving up the result.</p>
+    <p class="selfnote">And yes — this teardown is literally our product. Reading an AI bill and routing away the waste is the job Pareto does every night. We ran it blind, published the prices, and named the models as a set with no mapping. Judge the routing logic, not the logo.</p>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sechead rev">
+    <div class="k">Methodology</div>
+    <h2>How the teardown was run.</h2>
+  </div>
+  <div class="method rev">
+    <div class="mcell"><h4>One shot each</h4><p>Identical prompt, identical invoice + 18-row log. No cherry-picking. Each teardown is exactly what the model returned in a single pass.</p></div>
+    <div class="mcell"><h4>Scored against a key</h4><p>Six planted problems, seven decoys. A finding counts only if it names the mechanism, cites the row, and lands a dollar figure within 40% of truth. Flagging a decoy is a hallucination.</p></div>
+    <div class="mcell"><h4>Real bills, one yardstick</h4><p>Cost = each audit's real token usage × the model's published rate. Same math for all four. Run date 2026-07-04.</p></div>
+    <div class="mcell"><h4>Labels withheld on purpose</h4><p>We don't map model to auditor. Price is revealed; identity isn't. If the expensive run were obviously better, we'd have shown you. It wasn't.</p></div>
+  </div>
+  <p class="mnote rev"><b>Honest run note.</b> Two audits ran as Claude agent runs via the Anthropic API; GPT-5.5 and one more ran through our at-cost gateway. Same prompt, one shot each. Cost yardstick: the two Claude runs are priced at delivered output chars ÷ 4 tokens × published rate ($50/M out for one, $25/M out for the other); GPT-5.5 at real usage tokens × $30/M out + $2.50/M in; the fourth (GLM route) at real usage tokens × $3/M out + $0.93/M in. Invoice under audit reconciles to $21,419.12 to the cent.</p>
+</section>
+
+<section class="cta rev">
+  <div>
+    <h2>Send us your AI bill.</h2>
+    <p>We'll run this exact teardown on your real usage — free. What you're spending, where it's leaking, what a router would have paid instead. Receipts attached, no logo attached.</p>
+  </div>
+  <div class="btns">
+    <a class="btn primary" href="mailto:hello@unbiased.ai?subject=Tear%20down%20my%20AI%20bill">Send us your AI bill — free</a>
+    <a class="btn ghost" href="mailto:hello@unbiased.ai?subject=Run%20contest%20004%20on%20my%20invoice">Or run this teardown on your invoice</a>
+  </div>
+</section>
+
+<nav class="series" aria-label="The Contest Series" style="max-width:1080px;margin:44px auto 0;padding:14px 20px;background:var(--card);border:1px solid var(--line);border-radius:14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;font-size:12.5px">
+  <span style="font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-size:11px">The Contest Series</span>
+  <a href="/unbiased-contest/" style="color:var(--muted);text-decoration:none;font-weight:500">#001 Landing Page</a>
+  <a href="/unbiased-contest/002/" style="color:var(--muted);text-decoration:none;font-weight:500">#002 Support Inbox</a>
+  <a href="/unbiased-contest/003/" style="color:var(--muted);text-decoration:none;font-weight:500">#003 Extraction</a>
+  <span style="color:var(--ink);font-weight:600">#004 Bill Teardown</span>
+  <a href="/unbiased-contest/005/" style="color:var(--muted);text-decoration:none;font-weight:500">#005 Dashboard</a>
+</nav>
+
+<footer>
+  <span><b style="color:var(--ink)">unbiased.ai</b> · Loyal to your bill.</span>
+  <span>Contest #004 · Ran 2026-07-04 · <a href="https://bougie-atxp.github.io/unbiased-contest/" target="_blank" rel="noopener">Contest #001 ↗</a></span>
+</footer>
+</main>
+
+<script>
+const ro=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll('.rev').forEach(el=>ro.observe(el));
+const so=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;so.unobserve(e.target);
+  const el=e.target,v=parseFloat(el.dataset.settle),dp=+el.dataset.dp,pre=el.dataset.prefix||'';
+  const t0=performance.now(),dur=900,from=v*.62;
+  const step=t=>{const p=Math.min(1,(t-t0)/dur),ease=1-Math.pow(1-p,3);el.textContent=pre+(from+(v-from)*ease).toFixed(dp);if(p<1)requestAnimationFrame(step)};
+  requestAnimationFrame(step);}),{threshold:.6});
+document.querySelectorAll('[data-settle]').forEach(el=>so.observe(el));
+const cb=document.getElementById('copyBtn');
+if(cb)cb.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(document.getElementById('promptText').innerText);cb.textContent='Copied';setTimeout(()=>cb.textContent='Copy',1600)}catch{cb.textContent='Select + copy'}});
+
+// blind quiz — guess which audit cost the most
+(function(){
+  const quiz=document.getElementById('quiz'); if(!quiz) return;
+  const cards=[...quiz.querySelectorAll('.qcard')], punch=document.getElementById('punch'), btn=document.getElementById('revealBtn');
+  let guess=null, done=false;
+  cards.forEach(c=>c.addEventListener('click',()=>{ if(done) return; cards.forEach(x=>x.classList.remove('guess')); c.classList.add('guess'); guess=c.dataset.key; punch.innerHTML='Locked in <b>Auditor '+c.dataset.key.toUpperCase()+'</b> as the priciest. Now reveal the audit bills →'; }));
+  btn.addEventListener('click',()=>{
+    if(done) return; done=true;
+    cards.forEach(c=>{ c.classList.add('revealed'); c.querySelector('.qprice .v').textContent='$'+parseFloat(c.dataset.cost).toFixed(4); });
+    const hi=cards.find(c=>c.dataset.key==='b'), lo=cards.find(c=>c.dataset.key==='d');
+    hi.classList.add('hi'); lo.classList.add('lo');
+    const ht=hi.querySelector('.qtag'); ht.textContent='PRICIEST · 5 OF 6'; ht.classList.add('show','amber'); hi.querySelector('.qprice .v').style.color='var(--amber)';
+    const lt=lo.querySelector('.qtag'); lt.textContent='CHEAPEST · 4.6× LESS'; lt.classList.add('show','em'); lo.querySelector('.qprice .v').style.color='var(--em-deep)';
+    punch.innerHTML = guess==='b'
+      ? 'Nailed it — <b>Auditor B ($0.194)</b> ran up the biggest audit bill, 4.6× Auditor D. And it still found only 5 of 6. Paying more bought a worse audit.'
+      : (guess ? 'Gotcha. <b>Auditor B ($0.194)</b> was the priciest — 4.6× <b>Auditor D ($0.0426)</b> — and the two tied at 5 of 6. The cheapest audit that found <i>all six</i> was $0.0786. Price told you nothing.'
+               : '<b>Auditor B ($0.194)</b> cost 4.6× <b>Auditor D ($0.0426)</b> — and tied it at 5 of 6. The cheapest full-marks audit was $0.0786. Price told you nothing about quality.');
+    btn.disabled=true; btn.textContent='Bills revealed';
+  });
+})();
+
+// scale card: annualize the waste the best audit found
+(function(){
+  const seg=document.getElementById('seg'); if(!seg) return;
+  const CUR=10777.20, REC=9754.20, fmt=n=>'$'+Math.round(n).toLocaleString('en-US');
+  const set=v=>{
+    document.getElementById('scHigh').textContent=fmt(CUR*v);
+    document.getElementById('scLow').textContent=fmt(REC*v);
+  };
+  seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...seg.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');set(+b.dataset.v);});
+  set(12);
+})();
+</script>
+</body>
+</html>

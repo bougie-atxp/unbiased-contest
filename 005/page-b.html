@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Northwind Analytics — SaaS Dashboard</title>
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --panel:#ffffff;
+      --panel-2:#f0f4fa;
+      --text:#172033;
+      --muted:#66758f;
+      --muted-2:#8793a8;
+      --grid:#dce4ef;
+      --border:#dfe7f2;
+      --accent:#2f6df6;
+      --accent-2:#15b8a6;
+      --accent-3:#8b5cf6;
+      --danger:#e25563;
+      --warning:#f59e0b;
+      --good:#16a36a;
+      --shadow:0 18px 45px rgba(20,35,65,.10);
+      --radius:22px;
+      --focus:0 0 0 4px rgba(47,109,246,.18);
+    }
+    html.dark{
+      --bg:#0d1320;
+      --panel:#131c2d;
+      --panel-2:#192439;
+      --text:#eef4ff;
+      --muted:#9eacc4;
+      --muted-2:#748199;
+      --grid:#2a3851;
+      --border:#26344d;
+      --accent:#6ea2ff;
+      --accent-2:#2dd4bf;
+      --accent-3:#a78bfa;
+      --danger:#fb7185;
+      --warning:#fbbf24;
+      --good:#34d399;
+      --shadow:0 18px 55px rgba(0,0,0,.28);
+      --focus:0 0 0 4px rgba(110,162,255,.22);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      min-width:0;
+      overflow-x:hidden;
+      background:
+        radial-gradient(900px 380px at 15% -10%, rgba(47,109,246,.18), transparent 60%),
+        radial-gradient(700px 340px at 100% 0%, rgba(21,184,166,.13), transparent 55%),
+        var(--bg);
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height:1.45;
+    }
+    button{font:inherit}
+    .shell{
+      width:min(1220px, calc(100% - 32px));
+      margin:0 auto;
+      padding:24px 0 34px;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:22px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:13px;
+      min-width:0;
+    }
+    .logo{
+      width:44px;
+      height:44px;
+      border-radius:15px;
+      background:
+        linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow:0 12px 24px rgba(47,109,246,.22);
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+    }
+    .logo svg{width:27px;height:27px}
+    h1{
+      font-size:clamp(1.35rem, 2.2vw, 2.05rem);
+      line-height:1.1;
+      margin:0;
+      letter-spacing:-.035em;
+    }
+    .subtitle{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:.94rem;
+      white-space:normal;
+    }
+    .actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .segmented{
+      display:flex;
+      padding:5px;
+      gap:4px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.54);
+      border-radius:999px;
+      box-shadow:0 8px 22px rgba(20,35,65,.05);
+    }
+    html.dark .segmented{background:rgba(19,28,45,.68)}
+    .segmented button,
+    .mode-btn{
+      border:0;
+      cursor:pointer;
+      color:var(--muted);
+      background:transparent;
+      border-radius:999px;
+      min-height:38px;
+      transition:transform .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease;
+    }
+    .segmented button{
+      padding:0 14px;
+      font-weight:750;
+      font-size:.9rem;
+    }
+    .segmented button[aria-pressed="true"]{
+      color:#fff;
+      background:linear-gradient(135deg, var(--accent), #5e8bff);
+      box-shadow:0 8px 20px rgba(47,109,246,.26);
+    }
+    .mode-btn{
+      width:42px;
+      border:1px solid var(--border);
+      background:var(--panel);
+      color:var(--text);
+      box-shadow:0 8px 22px rgba(20,35,65,.06);
+    }
+    .segmented button:hover,
+    .mode-btn:hover{transform:translateY(-1px)}
+    .segmented button:focus-visible,
+    .mode-btn:focus-visible{outline:none;box-shadow:var(--focus)}
+    .hero{
+      display:grid;
+      grid-template-columns:1.4fr .6fr;
+      gap:18px;
+      align-items:stretch;
+      margin-bottom:18px;
+    }
+    .summary-card,
+    .insight,
+    .kpi,
+    .chart-card{
+      border:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.72));
+      box-shadow:var(--shadow);
+      border-radius:var(--radius);
+    }
+    html.dark .summary-card,
+    html.dark .insight,
+    html.dark .kpi,
+    html.dark .chart-card{
+      background:linear-gradient(180deg, rgba(19,28,45,.96), rgba(19,28,45,.82));
+    }
+    .summary-card{
+      padding:22px;
+      overflow:hidden;
+      position:relative;
+    }
+    .summary-card:after{
+      content:"";
+      position:absolute;
+      inset:auto -80px -120px auto;
+      width:260px;
+      height:260px;
+      background:radial-gradient(circle, rgba(47,109,246,.16), transparent 65%);
+      pointer-events:none;
+    }
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      color:var(--accent);
+      font-weight:800;
+      font-size:.82rem;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      margin-bottom:10px;
+    }
+    .dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--good);
+      box-shadow:0 0 0 5px rgba(22,163,106,.12);
+    }
+    .summary-card h2{
+      margin:0;
+      max-width:780px;
+      font-size:clamp(1.45rem, 2.5vw, 2.45rem);
+      line-height:1.09;
+      letter-spacing:-.045em;
+    }
+    .summary-card p{
+      margin:12px 0 0;
+      color:var(--muted);
+      max-width:760px;
+      font-size:1rem;
+    }
+    .insight{
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:16px;
+      min-width:0;
+    }
+    .insight strong{
+      display:block;
+      font-size:1.02rem;
+      margin-bottom:7px;
+    }
+    .insight p{
+      margin:0;
+      color:var(--muted);
+      font-size:.95rem;
+    }
+    .pill{
+      align-self:flex-start;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 11px;
+      border-radius:999px;
+      background:rgba(245,158,11,.12);
+      color:var(--warning);
+      font-weight:800;
+      font-size:.82rem;
+    }
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(5, minmax(0, 1fr));
+      gap:14px;
+      margin-bottom:18px;
+    }
+    .kpi{
+      padding:17px;
+      min-width:0;
+      position:relative;
+      overflow:hidden;
+    }
+    .kpi:before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto 0;
+      height:4px;
+      background:linear-gradient(90deg, var(--accent), var(--accent-2));
+      opacity:.85;
+    }
+    .kpi .label{
+      color:var(--muted);
+      font-weight:750;
+      font-size:.82rem;
+      text-transform:uppercase;
+      letter-spacing:.045em;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .kpi .value{
+      margin-top:9px;
+      font-size:clamp(1.35rem, 2.1vw, 2.05rem);
+      line-height:1;
+      letter-spacing:-.045em;
+      font-weight:850;
+      white-space:nowrap;
+    }
+    .trend{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      margin-top:11px;
+      font-size:.86rem;
+      color:var(--muted);
+      min-height:22px;
+    }
+    .trend b{
+      font-weight:850;
+      color:inherit;
+    }
+    .trend.good{color:var(--good)}
+    .trend.bad{color:var(--danger)}
+    .trend.neutral{color:var(--muted)}
+    .trend.warn{color:var(--warning)}
+    .charts{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:18px;
+      align-items:stretch;
+    }
+    .chart-card{
+      padding:18px;
+      min-width:0;
+      overflow:hidden;
+    }
+    .chart-card.wide{grid-column:1 / -1}
+    .chart-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:8px;
+    }
+    .chart-title h3{
+      margin:0;
+      font-size:1.04rem;
+      letter-spacing:-.02em;
+    }
+    .chart-title p{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:.88rem;
+    }
+    .legend{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      gap:10px;
+      color:var(--muted);
+      font-size:.83rem;
+      flex:0 0 auto;
+    }
+    .legend span{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      white-space:nowrap;
+    }
+    .swatch{
+      width:10px;
+      height:10px;
+      border-radius:3px;
+      display:inline-block;
+      background:var(--accent);
+    }
+    .swatch.teal{background:var(--accent-2)}
+    .swatch.red{background:var(--danger)}
+    .swatch.purple{background:var(--accent-3)}
+    .canvas-wrap{
+      width:100%;
+      height:320px;
+      min-width:0;
+      position:relative;
+    }
+    .wide .canvas-wrap{height:360px}
+    canvas{
+      display:block;
+      width:100%;
+      height:100%;
+    }
+    .footnote{
+      margin:18px 2px 0;
+      color:var(--muted-2);
+      font-size:.82rem;
+    }
+    .footnote code{
+      color:var(--muted);
+      background:var(--panel-2);
+      border:1px solid var(--border);
+      padding:1px 5px;
+      border-radius:7px;
+    }
+    @media (max-width: 980px){
+      .hero{grid-template-columns:1fr}
+      .kpis{grid-template-columns:repeat(2, minmax(0, 1fr))}
+      .charts{grid-template-columns:1fr}
+      .chart-card.wide{grid-column:auto}
+    }
+    @media (max-width: 620px){
+      .shell{width:min(100% - 22px, 1220px);padding-top:14px}
+      .topbar{align-items:flex-start;flex-direction:column}
+      .actions{width:100%;justify-content:space-between}
+      .segmented{flex:1;justify-content:space-between}
+      .segmented button{flex:1;padding:0 8px}
+      .kpis{grid-template-columns:1fr}
+      .summary-card,.insight,.kpi,.chart-card{border-radius:18px}
+      .summary-card{padding:18px}
+      .canvas-wrap{height:290px}
+      .wide .canvas-wrap{height:310px}
+      .chart-head{flex-direction:column}
+      .legend{justify-content:flex-start}
+    }
+    @media (prefers-reduced-motion: reduce){
+      html{scroll-behavior:auto}
+      *,*:before,*:after{transition:none!important;animation:none!important}
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 28 28" fill="none">
+            <path d="M5 21V9.8c0-1 .8-1.8 1.8-1.8h2.4c1 0 1.8.8 1.8 1.8V21H5Z" fill="white" opacity=".92"/>
+            <path d="M12 21V5.8c0-1 .8-1.8 1.8-1.8h2.4c1 0 1.8.8 1.8 1.8V21h-6Z" fill="white" opacity=".72"/>
+            <path d="M19 21v-8.2c0-1 .8-1.8 1.8-1.8h2.4c1 0 1.8.8 1.8 1.8V21h-6Z" fill="white"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Northwind Analytics</h1>
+          <p class="subtitle">Production SaaS analytics dashboard · Jul 2024–Jun 2026</p>
+        </div>
+      </div>
+      <div class="actions" aria-label="Dashboard controls">
+        <div class="segmented" role="group" aria-label="Time range">
+          <button type="button" data-range="6" aria-pressed="false">6M</button>
+          <button type="button" data-range="12" aria-pressed="true">12M</button>
+          <button type="button" data-range="all" aria-pressed="false">All</button>
+        </div>
+        <button class="mode-btn" id="modeToggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">☾</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="summary-card">
+        <div class="eyebrow"><span class="dot"></span><span id="rangeLabel">Last 12 months</span></div>
+        <h2>MRR closed at <span id="heroMrr">$197,400</span>, with customer growth still positive despite higher churn in stress months.</h2>
+        <p id="heroCopy">Use the range control to redraw every chart and refresh the period-growth KPI from the same source data.</p>
+      </div>
+      <aside class="insight" aria-live="polite">
+        <div>
+          <span class="pill">Derived insight</span>
+        </div>
+        <div>
+          <strong id="insightTitle">Churn and support peaked together.</strong>
+          <p id="insightText">December 2025 was the clearest stress point: 27 churned customers and 238 support tickets, both the highest values in the 24-month dataset.</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="kpis" aria-label="Key performance indicators">
+      <article class="kpi">
+        <div class="label">Current MRR</div>
+        <div class="value" id="kpiMrr">$197,400</div>
+        <div class="trend good" id="kpiMrrTrend">▲ <b>+$11,500</b> MoM (+6.2%)</div>
+      </article>
+      <article class="kpi">
+        <div class="label">Tracked customers</div>
+        <div class="value" id="kpiCustomers">857</div>
+        <div class="trend good" id="kpiCustomersTrend">▲ <b>+56</b> MoM (+7.0%)</div>
+      </article>
+      <article class="kpi">
+        <div class="label">Net new customers</div>
+        <div class="value" id="kpiNetNew">56</div>
+        <div class="trend bad" id="kpiNetNewTrend">▼ <b>-11</b> MoM (-16.4%)</div>
+      </article>
+      <article class="kpi">
+        <div class="label">Customer churn rate</div>
+        <div class="value" id="kpiChurn">2.2%</div>
+        <div class="trend bad" id="kpiChurnTrend">▲ <b>+0.2 pp</b> MoM</div>
+      </article>
+      <article class="kpi">
+        <div class="label">MRR growth in view</div>
+        <div class="value" id="kpiViewGrowth">$91,600</div>
+        <div class="trend good" id="kpiViewGrowthTrend">▲ <b>+$38,600</b> vs prior 12M</div>
+      </article>
+    </section>
+
+    <section class="charts" aria-label="Charts">
+      <article class="chart-card wide">
+        <div class="chart-head">
+          <div class="chart-title">
+            <h3>MRR over time</h3>
+            <p>Monthly recurring revenue, USD</p>
+          </div>
+          <div class="legend"><span><i class="swatch"></i> MRR</span></div>
+        </div>
+        <div class="canvas-wrap"><canvas id="mrrChart" aria-label="MRR over time chart"></canvas></div>
+      </article>
+
+      <article class="chart-card">
+        <div class="chart-head">
+          <div class="chart-title">
+            <h3>New vs. churned customers</h3>
+            <p>Monthly customer movement</p>
+          </div>
+          <div class="legend">
+            <span><i class="swatch teal"></i> New</span>
+            <span><i class="swatch red"></i> Churned</span>
+          </div>
+        </div>
+        <div class="canvas-wrap"><canvas id="customerChart" aria-label="New versus churned customers chart"></canvas></div>
+      </article>
+
+      <article class="chart-card">
+        <div class="chart-head">
+          <div class="chart-title">
+            <h3>Support tickets trend</h3>
+            <p>Monthly support demand</p>
+          </div>
+          <div class="legend"><span><i class="swatch purple"></i> Tickets</span></div>
+        </div>
+        <div class="canvas-wrap"><canvas id="supportChart" aria-label="Support tickets trend chart"></canvas></div>
+      </article>
+    </section>
+
+    <p class="footnote">
+      Customer totals and churn rates are computed from the supplied CSV only: tracked customers are cumulative <code>new_customers - churned_customers</code>; churn rate is <code>churned_customers / prior tracked customers</code>. No opening customer base was provided.
+    </p>
+  </main>
+
+  <script>
+    const rawData = [
+      {month:"2024-07",mrr_usd:48200,new_customers:31,churned_customers:9,support_tickets:142},
+      {month:"2024-08",mrr_usd:51800,new_customers:34,churned_customers:11,support_tickets:155},
+      {month:"2024-09",mrr_usd:55100,new_customers:29,churned_customers:13,support_tickets:168},
+      {month:"2024-10",mrr_usd:59400,new_customers:37,churned_customers:10,support_tickets:151},
+      {month:"2024-11",mrr_usd:63900,new_customers:41,churned_customers:12,support_tickets:177},
+      {month:"2024-12",mrr_usd:66200,new_customers:26,churned_customers:19,support_tickets:203},
+      {month:"2025-01",mrr_usd:71800,new_customers:48,churned_customers:14,support_tickets:166},
+      {month:"2025-02",mrr_usd:77300,new_customers:44,churned_customers:11,support_tickets:158},
+      {month:"2025-03",mrr_usd:83900,new_customers:52,churned_customers:13,support_tickets:171},
+      {month:"2025-04",mrr_usd:88100,new_customers:39,churned_customers:17,support_tickets:189},
+      {month:"2025-05",mrr_usd:94600,new_customers:51,churned_customers:12,support_tickets:164},
+      {month:"2025-06",mrr_usd:101200,new_customers:57,churned_customers:15,support_tickets:180},
+      {month:"2025-07",mrr_usd:105800,new_customers:43,churned_customers:21,support_tickets:214},
+      {month:"2025-08",mrr_usd:112400,new_customers:55,churned_customers:14,support_tickets:176},
+      {month:"2025-09",mrr_usd:120900,new_customers:63,churned_customers:13,support_tickets:182},
+      {month:"2025-10",mrr_usd:126300,new_customers:48,churned_customers:20,support_tickets:205},
+      {month:"2025-11",mrr_usd:134700,new_customers:66,churned_customers:15,support_tickets:191},
+      {month:"2025-12",mrr_usd:138900,new_customers:38,churned_customers:27,support_tickets:238},
+      {month:"2026-01",mrr_usd:148600,new_customers:71,churned_customers:16,support_tickets:187},
+      {month:"2026-02",mrr_usd:157200,new_customers:64,churned_customers:14,support_tickets:179},
+      {month:"2026-03",mrr_usd:167800,new_customers:78,churned_customers:17,support_tickets:196},
+      {month:"2026-04",mrr_usd:174300,new_customers:55,churned_customers:23,support_tickets:221},
+      {month:"2026-05",mrr_usd:185900,new_customers:82,churned_customers:15,support_tickets:188},
+      {month:"2026-06",mrr_usd:197400,new_customers:74,churned_customers:18,support_tickets:203}
+    ];
+
+    const monthFmt = new Intl.DateTimeFormat("en-US", {month:"short", year:"numeric", timeZone:"UTC"});
+    const shortMonthFmt = new Intl.DateTimeFormat("en-US", {month:"short", timeZone:"UTC"});
+    const money = n => "$" + Math.round(n).toLocaleString("en-US");
+    const moneyK = n => {
+      const sign = n < 0 ? "-" : "";
+      const abs = Math.abs(n);
+      return sign + "$" + (abs >= 1000 ? (abs/1000).toFixed(abs >= 100000 ? 0 : 1).replace(".0","") + "k" : abs.toLocaleString("en-US"));
+    };
+    const num = n => Math.round(n).toLocaleString("en-US");
+    const pct = n => (n * 100).toFixed(1) + "%";
+    const pp = n => (n >= 0 ? "+" : "") + (n * 100).toFixed(1) + " pp";
+
+    const data = rawData.map((d, i) => {
+      const date = new Date(d.month + "-01T00:00:00Z");
+      const net = d.new_customers - d.churned_customers;
+      return {...d, date, label: monthFmt.format(date), shortLabel: shortMonthFmt.format(date), net, index:i};
+    });
+    let running = 0;
+    data.forEach((d, i) => {
+      d.opening_customers = running;
+      running += d.net;
+      d.tracked_customers = running;
+      d.churn_rate = d.opening_customers > 0 ? d.churned_customers / d.opening_customers : null;
+    });
+
+    let currentRange = "12";
+    let animationId = 0;
+    const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const els = {
+      rangeLabel: document.getElementById("rangeLabel"),
+      heroMrr: document.getElementById("heroMrr"),
+      heroCopy: document.getElementById("heroCopy"),
+      insightTitle: document.getElementById("insightTitle"),
+      insightText: document.getElementById("insightText"),
+      kpiMrr: document.getElementById("kpiMrr"),
+      kpiMrrTrend: document.getElementById("kpiMrrTrend"),
+      kpiCustomers: document.getElementById("kpiCustomers"),
+      kpiCustomersTrend: document.getElementById("kpiCustomersTrend"),
+      kpiNetNew: document.getElementById("kpiNetNew"),
+      kpiNetNewTrend: document.getElementById("kpiNetNewTrend"),
+      kpiChurn: document.getElementById("kpiChurn"),
+      kpiChurnTrend: document.getElementById("kpiChurnTrend"),
+      kpiViewGrowth: document.getElementById("kpiViewGrowth"),
+      kpiViewGrowthTrend: document.getElementById("kpiViewGrowthTrend")
+    };
+
+    function cssVar(name){
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+    function getTheme(){
+      return {
+        text: cssVar("--text"),
+        muted: cssVar("--muted"),
+        grid: cssVar("--grid"),
+        accent: cssVar("--accent"),
+        teal: cssVar("--accent-2"),
+        purple: cssVar("--accent-3"),
+        danger: cssVar("--danger"),
+        good: cssVar("--good"),
+        panel: cssVar("--panel")
+      };
+    }
+    function subsetForRange(){
+      if(currentRange === "all") return data.slice();
+      return data.slice(-Number(currentRange));
+    }
+    function labelForRange(){
+      return currentRange === "all" ? "All 24 months" : "Last " + currentRange + " months";
+    }
+    function setTrend(el, direction, html){
+      el.className = "trend " + direction;
+      el.innerHTML = html;
+    }
+    function triangle(value, goodWhenPositive=true){
+      if(value === 0) return "•";
+      const up = value > 0;
+      return up ? "▲" : "▼";
+    }
+    function trendClass(value, goodWhenPositive=true){
+      if(value === 0) return "neutral";
+      return (value > 0) === goodWhenPositive ? "good" : "bad";
+    }
+    function signedMoney(n){ return (n >= 0 ? "+" : "-") + money(Math.abs(n)).slice(1); }
+    function signedNum(n){ return (n >= 0 ? "+" : "") + num(n); }
+
+    function updateKpis(){
+      const subset = subsetForRange();
+      const latest = data[data.length - 1];
+      const prev = data[data.length - 2];
+
+      const mrrDiff = latest.mrr_usd - prev.mrr_usd;
+      const mrrPct = mrrDiff / prev.mrr_usd;
+
+      const custDiff = latest.tracked_customers - prev.tracked_customers;
+      const custPct = custDiff / prev.tracked_customers;
+
+      const netDiff = latest.net - prev.net;
+      const netPct = netDiff / prev.net;
+
+      const churnDiff = latest.churn_rate - prev.churn_rate;
+
+      const viewGrowth = subset[subset.length - 1].mrr_usd - subset[0].mrr_usd;
+      let priorText = "";
+      if(currentRange === "all"){
+        priorText = "Full period growth";
+      } else {
+        const len = Number(currentRange);
+        const start = data.length - len;
+        const prior = data.slice(Math.max(0, start - len), start);
+        if(prior.length === len){
+          const priorGrowth = prior[prior.length - 1].mrr_usd - prior[0].mrr_usd;
+          const diff = viewGrowth - priorGrowth;
+          priorText = `${triangle(diff)} <b>${signedMoney(diff)}</b> vs prior ${len}M`;
+          setTrend(els.kpiViewGrowthTrend, trendClass(diff, true), priorText);
+        } else {
+          setTrend(els.kpiViewGrowthTrend, "neutral", "• <b>No complete prior period</b>");
+        }
+      }
+
+      els.rangeLabel.textContent = labelForRange();
+      els.heroMrr.textContent = money(latest.mrr_usd);
+      const viewPct = viewGrowth / subset[0].mrr_usd;
+      els.heroCopy.textContent = `${labelForRange()} shows ${money(viewGrowth)} of MRR expansion (${pct(viewPct)}) from ${subset[0].label} to ${subset[subset.length-1].label}.`;
+
+      els.kpiMrr.textContent = money(latest.mrr_usd);
+      setTrend(els.kpiMrrTrend, trendClass(mrrDiff, true), `${triangle(mrrDiff)} <b>${signedMoney(mrrDiff)}</b> MoM (${mrrDiff >= 0 ? "+" : ""}${pct(mrrPct)})`);
+
+      els.kpiCustomers.textContent = num(latest.tracked_customers);
+      setTrend(els.kpiCustomersTrend, trendClass(custDiff, true), `${triangle(custDiff)} <b>${signedNum(custDiff)}</b> MoM (${custPct >= 0 ? "+" : ""}${pct(custPct)})`);
+
+      els.kpiNetNew.textContent = num(latest.net);
+      setTrend(els.kpiNetNewTrend, trendClass(netDiff, true), `${triangle(netDiff)} <b>${signedNum(netDiff)}</b> MoM (${netPct >= 0 ? "+" : ""}${pct(netPct)})`);
+
+      els.kpiChurn.textContent = pct(latest.churn_rate);
+      setTrend(els.kpiChurnTrend, trendClass(churnDiff, false), `${triangle(churnDiff, false)} <b>${pp(churnDiff)}</b> MoM`);
+
+      els.kpiViewGrowth.textContent = money(viewGrowth);
+      if(currentRange === "all"){
+        setTrend(els.kpiViewGrowthTrend, "good", `▲ <b>${pct(viewPct)}</b> since ${subset[0].label}`);
+      }
+
+      updateInsight(subset);
+    }
+
+    function updateInsight(subset){
+      const includesDec2025 = subset.some(d => d.month === "2025-12");
+      if(includesDec2025){
+        els.insightTitle.textContent = "Churn and support peaked together.";
+        els.insightText.textContent = "December 2025 was the clearest stress point: 27 churned customers and 238 support tickets, both the highest values in the selected dataset.";
+        return;
+      }
+      let best = null;
+      for(let i=1;i<subset.length;i++){
+        const gain = subset[i].mrr_usd - subset[i-1].mrr_usd;
+        if(!best || gain > best.gain) best = {month: subset[i].label, gain};
+      }
+      const maxNet = subset.reduce((a,b) => b.net > a.net ? b : a, subset[0]);
+      els.insightTitle.textContent = "MRR acceleration stayed strong.";
+      els.insightText.textContent = `${best.month} delivered the largest MRR gain in this view at ${money(best.gain)}. Net customer additions peaked at +${maxNet.net} in ${maxNet.label}.`;
+    }
+
+    function setupCanvas(canvas){
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      const w = Math.max(260, rect.width);
+      const h = Math.max(230, rect.height);
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return {ctx, w, h};
+    }
+
+    function niceMax(value){
+      if(value <= 0) return 1;
+      const exp = Math.floor(Math.log10(value));
+      const base = Math.pow(10, exp);
+      const f = value / base;
+      const nice = f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10;
+      return nice * base;
+    }
+    function niceMin(value, step){
+      return Math.max(0, Math.floor(value / step) * step);
+    }
+    function roundedStep(max, ticks){
+      return niceMax(max) / ticks;
+    }
+
+    function drawAxes(ctx, plot, yMin, yMax, yTicks, yFormatter, yLabel, xLabel, rows){
+      const t = getTheme();
+      ctx.save();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = t.grid;
+      ctx.fillStyle = t.muted;
+      ctx.font = "12px ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+
+      for(let i=0;i<=yTicks;i++){
+        const val = yMin + (yMax - yMin) * i / yTicks;
+        const y = plot.bottom - (val - yMin) / (yMax - yMin) * plot.h;
+        ctx.beginPath();
+        ctx.moveTo(plot.left, y);
+        ctx.lineTo(plot.right, y);
+        ctx.stroke();
+        ctx.fillText(yFormatter(val), plot.left - 9, y);
+      }
+
+      ctx.strokeStyle = t.grid;
+      ctx.beginPath();
+      ctx.moveTo(plot.left, plot.top);
+      ctx.lineTo(plot.left, plot.bottom);
+      ctx.lineTo(plot.right, plot.bottom);
+      ctx.stroke();
+
+      const step = Math.max(1, Math.ceil(rows.length / 6));
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      rows.forEach((d, i) => {
+        if(i === 0 || i === rows.length - 1 || i % step === 0){
+          const x = rows.length === 1 ? plot.left + plot.w / 2 : plot.left + i * plot.w / (rows.length - 1);
+          ctx.fillText(d.shortLabel + " '" + String(d.date.getUTCFullYear()).slice(2), x, plot.bottom + 10);
+        }
+      });
+
+      ctx.fillStyle = t.muted;
+      ctx.font = "700 12px ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif";
+      ctx.fillText(xLabel, plot.left + plot.w / 2, plot.bottom + 39);
+
+      ctx.translate(14, plot.top + plot.h / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(yLabel, 0, 0);
+      ctx.restore();
+    }
+
+    function plotArea(w, h){
+      const compact = w < 430;
+      return {
+        left: compact ? 58 : 70,
+        right: w - 16,
+        top: 18,
+        bottom: h - 58
+      };
+    }
+
+    function drawMrrChart(progress){
+      const canvas = document.getElementById("mrrChart");
+      const {ctx, w, h} = setupCanvas(canvas);
+      const rows = subsetForRange();
+      const t = getTheme();
+      const plot = plotArea(w, h);
+      plot.w = plot.right - plot.left;
+      plot.h = plot.bottom - plot.top;
+
+      ctx.clearRect(0,0,w,h);
+
+      const values = rows.map(d => d.mrr_usd);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const yMax = niceMax(max * 1.08);
+      const step = roundedStep(yMax, 5);
+      const yMin = niceMin(min * .88, step);
+
+      drawAxes(ctx, plot, yMin, yMax, 5, moneyK, "MRR (USD)", "Month", rows);
+
+      const points = rows.map((d, i) => {
+        const x = rows.length === 1 ? plot.left + plot.w/2 : plot.left + i * plot.w / (rows.length - 1);
+        const targetY = plot.bottom - (d.mrr_usd - yMin) / (yMax - yMin) * plot.h;
+        const y = plot.bottom - (plot.bottom - targetY) * progress;
+        return {x, y, targetY};
+      });
+
+      const grad = ctx.createLinearGradient(0, plot.top, 0, plot.bottom);
+      grad.addColorStop(0, hexToRgba(t.accent, .28));
+      grad.addColorStop(1, hexToRgba(t.accent, .02));
+
+      ctx.save();
+      ctx.beginPath();
+      points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+      ctx.lineTo(points[points.length-1].x, plot.bottom);
+      ctx.lineTo(points[0].x, plot.bottom);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.restore();
+
+      ctx.beginPath();
+      points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+      ctx.strokeStyle = t.accent;
+      ctx.lineWidth = 3;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.stroke();
+
+      ctx.fillStyle = t.panel;
+      ctx.strokeStyle = t.accent;
+      ctx.lineWidth = 2;
+      points.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      });
+
+      const last = points[points.length-1];
+      ctx.fillStyle = t.text;
+      ctx.font = "800 12px ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(money(rows[rows.length-1].mrr_usd), Math.min(plot.right, last.x + 2), Math.max(plot.top + 8, last.y - 12));
+    }
+
+    function drawCustomerChart(progress){
+      const canvas = document.getElementById("customerChart");
+      const {ctx, w, h} = setupCanvas(canvas);
+      const rows = subsetForRange();
+      const t = getTheme();
+      const plot = plotArea(w, h);
+      plot.w = plot.right - plot.left;
+      plot.h = plot.bottom - plot.top;
+
+      ctx.clearRect(0,0,w,h);
+
+      const max = Math.max(...rows.map(d => Math.max(d.new_customers, d.churned_customers)));
+      const yMax = niceMax(max * 1.15);
+      drawAxes(ctx, plot, 0, yMax, 5, v => Math.round(v).toString(), "Customers", "Month", rows);
+
+      const groupW = plot.w / rows.length;
+      const barW = Math.max(5, Math.min(18, groupW * .24));
+
+      rows.forEach((d, i) => {
+        const center = plot.left + groupW * (i + .5);
+        const newH = d.new_customers / yMax * plot.h * progress;
+        const churnH = d.churned_customers / yMax * plot.h * progress;
+        roundRect(ctx, center - barW - 2, plot.bottom - newH, barW, newH, 5, t.teal);
+        roundRect(ctx, center + 2, plot.bottom - churnH, barW, churnH, 5, t.danger);
+      });
+    }
+
+    function drawSupportChart(progress){
+      const canvas = document.getElementById("supportChart");
+      const {ctx, w, h} = setupCanvas(canvas);
+      const rows = subsetForRange();
+      const t = getTheme();
+      const plot = plotArea(w, h);
+      plot.w = plot.right - plot.left;
+      plot.h = plot.bottom - plot.top;
+
+      ctx.clearRect(0,0,w,h);
+
+      const values = rows.map(d => d.support_tickets);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const yMax = niceMax(max * 1.08);
+      const step = roundedStep(yMax, 5);
+      const yMin = niceMin(min * .78, step);
+      drawAxes(ctx, plot, yMin, yMax, 5, v => Math.round(v).toString(), "Tickets", "Month", rows);
+
+      const points = rows.map((d, i) => {
+        const x = rows.length === 1 ? plot.left + plot.w/2 : plot.left + i * plot.w / (rows.length - 1);
+        const targetY = plot.bottom - (d.support_tickets - yMin) / (yMax - yMin) * plot.h;
+        const y = plot.bottom - (plot.bottom - targetY) * progress;
+        return {x, y};
+      });
+
+      const grad = ctx.createLinearGradient(0, plot.top, 0, plot.bottom);
+      grad.addColorStop(0, hexToRgba(t.purple, .24));
+      grad.addColorStop(1, hexToRgba(t.purple, .02));
+
+      ctx.beginPath();
+      points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+      ctx.lineTo(points[points.length-1].x, plot.bottom);
+      ctx.lineTo(points[0].x, plot.bottom);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+      ctx.strokeStyle = t.purple;
+      ctx.lineWidth = 3;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.stroke();
+
+      ctx.fillStyle = t.panel;
+      ctx.strokeStyle = t.purple;
+      ctx.lineWidth = 2;
+      points.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      });
+    }
+
+    function roundRect(ctx, x, y, width, height, radius, fill){
+      const r = Math.min(radius, Math.abs(height) / 2, width / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + width, y, x + width, y + height, r);
+      ctx.arcTo(x + width, y + height, x, y + height, r);
+      ctx.arcTo(x, y + height, x, y, r);
+      ctx.arcTo(x, y, x + width, y, r);
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+
+    function hexToRgba(color, alpha){
+      color = color.trim();
+      if(color.startsWith("#")){
+        let hex = color.slice(1);
+        if(hex.length === 3) hex = hex.split("").map(c => c + c).join("");
+        const n = parseInt(hex, 16);
+        return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${alpha})`;
+      }
+      if(color.startsWith("rgb")){
+        const parts = color.match(/\d+(\.\d+)?/g).slice(0,3);
+        return `rgba(${parts[0]},${parts[1]},${parts[2]},${alpha})`;
+      }
+      return color;
+    }
+
+    function redrawAll(animated=true){
+      cancelAnimationFrame(animationId);
+      const start = performance.now();
+      const duration = prefersReduced || !animated ? 1 : 760;
+      function frame(now){
+        const p = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - p, 3);
+        drawMrrChart(eased);
+        drawCustomerChart(eased);
+        drawSupportChart(eased);
+        if(p < 1) animationId = requestAnimationFrame(frame);
+      }
+      animationId = requestAnimationFrame(frame);
+    }
+
+    document.querySelectorAll("[data-range]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentRange = btn.dataset.range;
+        document.querySelectorAll("[data-range]").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+        updateKpis();
+        redrawAll(true);
+      });
+    });
+
+    const modeToggle = document.getElementById("modeToggle");
+    function applyMode(dark){
+      document.documentElement.classList.toggle("dark", dark);
+      modeToggle.textContent = dark ? "☀" : "☾";
+      modeToggle.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+      try{ localStorage.setItem("northwind-dark", dark ? "1" : "0"); }catch(e){}
+      redrawAll(false);
+    }
+    let storedDark = null;
+    try{ storedDark = localStorage.getItem("northwind-dark"); }catch(e){}
+    const systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    applyMode(storedDark === null ? systemDark : storedDark === "1");
+    modeToggle.addEventListener("click", () => applyMode(!document.documentElement.classList.contains("dark")));
+
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => redrawAll(false), 120);
+    });
+
+    updateKpis();
+    redrawAll(true);
+  </script>
+</body>
+</html>
